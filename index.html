@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="ADHD Dopamine Menu Tracker - Science-backed mobile app for ADHD brains. 100+ activities. No account. Works offline." />
-  <title>ADHD Dopamine Menu Tracker</title>
+  <meta name="description" content="Dopamine Menu — a gamified ADHD activity app built by someone who gets it. No shame, no subscriptions, just wins." />
+  <title>Dopamine Menu — For Brains That Work Differently</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +12,6 @@
   <style>
     * { font-family: 'Inter', sans-serif; }
     html { scroll-behavior: smooth; }
-    @keyframes fadeUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
     @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
     .fade-up { opacity:0; transform:translateY(28px); transition:opacity 0.6s ease-out,transform 0.6s ease-out; }
     .fade-up.visible { opacity:1; transform:translateY(0); }
@@ -29,9 +28,11 @@
     .btn-p:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,180,166,0.45); }
     .btn-g { border:2px solid #e2e8f0; border-radius:12px; font-weight:600; color:#475569; transition:all 0.2s ease; display:inline-flex; align-items:center; gap:8px; }
     .btn-g:hover { border-color:#00b4a6; color:#00b4a6; }
+    .squiggle { text-decoration: underline; text-decoration-style: wavy; text-decoration-color: #00b4a6; }
   </style>
 </head>
 <body class="bg-white text-slate-800 antialiased">
+
 <!-- NAVBAR -->
 <nav id="navbar" class="fixed top-0 left-0 right-0 z-50 bg-white/80 border-b border-slate-100">
   <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
@@ -40,22 +41,26 @@
       <span class="font-bold text-slate-900 text-lg">Dopamine Menu</span>
     </div>
     <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-      <a href="#features" class="hover:text-teal-500 transition-colors">Features</a>
+      <a href="#real-talk" class="hover:text-teal-500 transition-colors">Real Talk</a>
+      <a href="#features" class="hover:text-teal-500 transition-colors">What's Inside</a>
       <a href="#how-it-works" class="hover:text-teal-500 transition-colors">How It Works</a>
       <a href="#pricing" class="hover:text-teal-500 transition-colors">Pricing</a>
       <a href="#faq" class="hover:text-teal-500 transition-colors">FAQ</a>
     </div>
-    <a href="#pricing" class="btn-p px-5 py-2.5 text-sm hidden md:inline-flex">
-      <i data-lucide="shopping-cart" style="width:15px;height:15px;"></i> Get It Now
+    <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-sm hidden md:inline-flex">
+      <i data-lucide="zap" style="width:15px;height:15px;"></i> Grab It — $19.99
     </a>
     <button class="md:hidden p-2 text-slate-600" onclick="document.getElementById('mm').classList.toggle('hidden')">
       <i data-lucide="menu" style="width:22px;height:22px;"></i>
     </button>
   </div>
   <div id="mm" class="hidden md:hidden border-t border-slate-100 bg-white px-6 py-4 flex flex-col gap-4 text-sm font-medium text-slate-600">
-    <a href="#features">Features</a><a href="#how-it-works">How It Works</a>
-    <a href="#pricing">Pricing</a><a href="#faq">FAQ</a>
-    <a href="#pricing" class="btn-p px-5 py-2.5 text-center justify-center">Get It Now</a>
+    <a href="#real-talk">Real Talk</a>
+    <a href="#features">What's Inside</a>
+    <a href="#how-it-works">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#faq">FAQ</a>
+    <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-center justify-center">Grab It — $19.99</a>
   </div>
 </nav>
 
@@ -64,27 +69,27 @@
   <div class="max-w-6xl mx-auto">
     <div class="text-center max-w-3xl mx-auto">
       <div class="inline-flex items-center gap-2 bg-teal-50 text-teal-700 border border-teal-200 rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
-        &#x1F9EA; Built on peer-reviewed ADHD neuroscience
+        &#x1F44B; Hey — I made this for us
       </div>
       <h1 class="text-4xl md:text-6xl font-black text-slate-900 leading-tight mb-6">
-        Your ADHD brain needs a<br/>
-        <span class="gradient-text">Dopamine Menu</span>
+        Your brain has 47 tabs open.<br/>
+        <span class="gradient-text">Let's close a few.</span>
       </h1>
-      <p class="text-lg md:text-xl text-slate-500 leading-relaxed mb-10 max-w-2xl mx-auto">
-        100+ science-backed activities that actually work for ADHD brains &mdash; organized by effort, time, and category. Break through frozen moments in under 2 minutes.
+      <p class="text-lg md:text-xl text-slate-500 leading-relaxed mb-4 max-w-2xl mx-auto">
+        Not a planner. Not a productivity lecture. Just a <span class="squiggle text-slate-700 font-semibold">Dopamine Menu</span> — a list of things that actually help your brain get unstuck, with XP and gold stars because yes, that stuff works.
+      </p>
+      <p class="text-base text-slate-400 mb-10 max-w-xl mx-auto">
+        Built by someone who once stared at a wall for two hours trying to decide between washing a dish and writing an email. (The dish won. Eventually.)
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-        <a href="#pricing" class="btn-p px-8 py-4 text-base w-full sm:w-auto justify-center">
-          <i data-lucide="zap" style="width:18px;height:18px;"></i> Get Instant Access
-        </a>
-        <a href="#how-it-works" class="btn-g px-8 py-4 text-base w-full sm:w-auto justify-center">
-          <i data-lucide="play-circle" style="width:18px;height:18px;"></i> See How It Works
+        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-8 py-4 text-base w-full sm:w-auto justify-center">
+          <i data-lucide="zap" style="width:18px;height:18px;"></i> Yeah, I Need This — $19.99
         </a>
       </div>
       <div class="flex flex-wrap justify-center gap-6 text-sm text-slate-500">
         <span class="flex items-center gap-1.5"><i data-lucide="shield-check" style="width:15px;height:15px;color:#00b4a6;"></i> No account needed</span>
         <span class="flex items-center gap-1.5"><i data-lucide="wifi-off" style="width:15px;height:15px;color:#00b4a6;"></i> Works offline</span>
-        <span class="flex items-center gap-1.5"><i data-lucide="lock" style="width:15px;height:15px;color:#00b4a6;"></i> Data stays on your device</span>
+        <span class="flex items-center gap-1.5"><i data-lucide="lock" style="width:15px;height:15px;color:#00b4a6;"></i> Your data stays on your device</span>
         <span class="flex items-center gap-1.5"><i data-lucide="smartphone" style="width:15px;height:15px;color:#00b4a6;"></i> Installs like a native app</span>
       </div>
     </div>
@@ -100,24 +105,24 @@
             <div class="mx-3 mt-3 bg-teal-900/40 border border-teal-700/40 rounded-xl p-3">
               <div class="text-teal-400 text-xs font-bold mb-0.5">&#x2728; TODAY'S PICK</div>
               <div class="text-white text-xs font-semibold">4-7-8 breathing</div>
-              <div class="text-slate-400 text-xs">1 min</div>
+              <div class="text-slate-400 text-xs">1 min · nervous system reset</div>
             </div>
             <div class="flex gap-1.5 px-3 mt-3">
-              <div class="bg-teal-500/20 text-teal-400 border border-teal-500/40 rounded-full px-2 py-0.5 text-xs font-semibold">&#x1F957; Appetizers</div>
-              <div class="bg-slate-700 text-slate-400 rounded-full px-2 py-0.5 text-xs">&#x1F37D; Mains</div>
+              <div class="bg-teal-500/20 text-teal-400 border border-teal-500/40 rounded-full px-2 py-0.5 text-xs font-semibold">&#x1F957; Quick Wins</div>
+              <div class="bg-slate-700 text-slate-400 rounded-full px-2 py-0.5 text-xs">&#x1F37D; Deep Work</div>
             </div>
             <div class="grid grid-cols-2 gap-2 p-3">
               <div class="bg-slate-700 rounded-xl p-2.5 border-t-2 border-teal-500">
                 <div class="mb-1">&#x1F4A7;</div>
                 <div class="text-white text-xs font-semibold">Drink water</div>
                 <div class="text-slate-400 text-xs mt-1">1 min</div>
-                <div class="mt-2 bg-teal-500 rounded-lg py-1 text-center text-white text-xs font-bold">&#x2713; Done</div>
+                <div class="mt-2 bg-teal-500 rounded-lg py-1 text-center text-white text-xs font-bold">&#x2713; Done +10 XP</div>
               </div>
               <div class="bg-slate-700 rounded-xl p-2.5 border-t-2 border-indigo-400">
                 <div class="mb-1">&#x1F938;</div>
                 <div class="text-white text-xs font-semibold">5 jumping jacks</div>
                 <div class="text-slate-400 text-xs mt-1">1 min</div>
-                <div class="mt-2 bg-indigo-400 rounded-lg py-1 text-center text-white text-xs font-bold">&#x2713; Done</div>
+                <div class="mt-2 bg-indigo-400 rounded-lg py-1 text-center text-white text-xs font-bold">&#x2713; Done +10 XP</div>
               </div>
             </div>
             <div class="flex border-t border-slate-700">
@@ -142,97 +147,58 @@
     </div>
   </div>
 </section>
-<!-- PROBLEM -->
-<section class="py-20 px-6 bg-slate-50">
-  <div class="max-w-6xl mx-auto">
-    <div class="text-center mb-14 fade-up">
-      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Sound familiar?</h2>
-      <p class="text-slate-500 text-lg max-w-xl mx-auto">ADHD is not about not caring. It is about a brain that struggles to generate dopamine on demand.</p>
+
+<!-- REAL TALK SECTION -->
+<section id="real-talk" class="py-20 px-6 bg-slate-900 text-white">
+  <div class="max-w-3xl mx-auto text-center">
+    <div class="text-5xl mb-6">&#x1F9E0;</div>
+    <h2 class="text-3xl md:text-4xl font-black mb-6 leading-tight">
+      Okay, real talk for a second.
+    </h2>
+    <p class="text-slate-300 text-lg leading-relaxed mb-6">
+      I'm not a productivity guru. I don't have a morning routine that starts at 5am. I built this because I was tired of apps that made me feel worse about myself when I didn't use them perfectly.
+    </p>
+    <p class="text-slate-300 text-lg leading-relaxed mb-6">
+      Standard planners feel like a personal insult when your brain works differently. "Just get organized" is about as helpful as "just grow a second head." I know. I've been there.
+    </p>
+    <p class="text-slate-300 text-lg leading-relaxed mb-8">
+      So I made something that works <em>with</em> the chaos instead of against it. Something that gives you a gold star for drinking water, because sometimes that's the win that starts everything else.
+    </p>
+    <div class="grid sm:grid-cols-3 gap-4 text-left">
+      <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+        <div class="text-3xl mb-3">&#x1F636;</div>
+        <div class="font-bold text-white mb-1">The Frozen Feeling</div>
+        <div class="text-slate-400 text-sm leading-relaxed">You know you need to do something. Anything. But your brain just won't start. You sit there for an hour doing nothing. Yeah. That.</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+        <div class="text-3xl mb-3">&#x1F300;</div>
+        <div class="font-bold text-white mb-1">Decision Paralysis</div>
+        <div class="text-slate-400 text-sm leading-relaxed">Too many options, too much thinking. By the time you decide what to do, the motivation window has already slammed shut.</div>
+      </div>
+      <div class="bg-slate-800 rounded-2xl p-5 border border-slate-700">
+        <div class="text-3xl mb-3">&#x1F4C9;</div>
+        <div class="font-bold text-white mb-1">The Shame Spiral</div>
+        <div class="text-slate-400 text-sm leading-relaxed">You feel lazy. You feel broken. But you're not — your brain just needs the right input to get dopamine flowing again. That's it.</div>
+      </div>
     </div>
-    <div class="grid md:grid-cols-3 gap-6">
-      <div class="bento fade-up bg-red-50 border-red-100">
-        <div class="text-4xl mb-4">&#x1F636;</div>
-        <h3 class="font-bold text-slate-900 mb-2">The Frozen Feeling</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">You know you need to do something. Anything. But your brain just will not start. You sit there for an hour doing nothing.</p>
-      </div>
-      <div class="bento fade-up bg-amber-50 border-amber-100" style="transition-delay:0.1s">
-        <div class="text-4xl mb-4">&#x1F300;</div>
-        <h3 class="font-bold text-slate-900 mb-2">Decision Paralysis</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">Too many options, too much thinking. By the time you decide what to do, the motivation window has already closed.</p>
-      </div>
-      <div class="bento fade-up bg-purple-50 border-purple-100" style="transition-delay:0.2s">
-        <div class="text-4xl mb-4">&#x1F4C9;</div>
-        <h3 class="font-bold text-slate-900 mb-2">The Shame Spiral</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">You feel lazy. You feel broken. But you are not &mdash; your brain just needs the right input to get dopamine flowing again.</p>
-      </div>
-    </div>
-    <div class="mt-10 text-center fade-up">
-      <div class="inline-flex items-center gap-3 bg-teal-50 border border-teal-200 rounded-2xl px-6 py-4 text-teal-800 font-semibold text-base">
-        <span class="text-2xl">&#x1F4A1;</span>
-        The Dopamine Menu gives your brain a structured, science-backed way out &mdash; in under 2 minutes.
-      </div>
+    <div class="mt-10 bg-teal-500/10 border border-teal-500/30 rounded-2xl px-6 py-5 text-teal-300 text-base font-medium">
+      &#x1F4A1; The Dopamine Menu gives your brain a structured way out of all three — in under 2 minutes. No lecture. No shame. Just a menu.
     </div>
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
-<section id="how-it-works" class="py-20 px-6 bg-white">
-  <div class="max-w-6xl mx-auto">
-    <div class="text-center mb-14 fade-up">
-      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">How It Works</h2>
-      <p class="text-slate-500 text-lg">Three steps. No friction. Designed for the ADHD brain.</p>
-    </div>
-    <div class="grid md:grid-cols-3 gap-8">
-      <div class="text-center fade-up">
-        <div class="w-14 h-14 rounded-2xl bg-teal-500 text-white text-xl font-black flex items-center justify-center mx-auto mb-5 shadow-lg">1</div>
-        <h3 class="font-bold text-slate-900 text-lg mb-2">Install in 60 seconds</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">Open the link on your phone, tap "Add to Home Screen" &mdash; it installs like a native app. No App Store. No account.</p>
-      </div>
-      <div class="text-center fade-up" style="transition-delay:0.15s">
-        <div class="w-14 h-14 rounded-2xl bg-indigo-500 text-white text-xl font-black flex items-center justify-center mx-auto mb-5 shadow-lg">2</div>
-        <h3 class="font-bold text-slate-900 text-lg mb-2">Pick from your menu</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">Browse by category and effort level. Tap "Today's Pick" if you cannot decide. Each activity shows the science behind why it works.</p>
-      </div>
-      <div class="text-center fade-up" style="transition-delay:0.3s">
-        <div class="w-14 h-14 rounded-2xl bg-amber-500 text-white text-xl font-black flex items-center justify-center mx-auto mb-5 shadow-lg">3</div>
-        <h3 class="font-bold text-slate-900 text-lg mb-2">Log wins, earn XP</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">Tap "Done" to log the win. Earn XP, build streaks, level up. Watch your energy shift &mdash; tracked with the before/after slider.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CATEGORIES -->
-<section class="py-20 px-6 bg-slate-50">
-  <div class="max-w-6xl mx-auto">
-    <div class="text-center mb-14 fade-up">
-      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">100+ Activities Across 7 Categories</h2>
-      <p class="text-slate-500 text-lg max-w-xl mx-auto">Every activity is backed by peer-reviewed research. Tap the "?" on any card to see the science.</p>
-    </div>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <div class="bento fade-up" style="border-top:3px solid #00b4a6"><div class="text-3xl mb-3">&#x1F957;</div><div class="font-bold text-slate-900 mb-1">Appetizers</div><div class="text-slate-500 text-sm mb-3">1-5 min quick starters. For when motivation is at zero.</div><div class="text-xs text-teal-600 font-semibold">20 activities</div></div>
-      <div class="bento fade-up" style="border-top:3px solid #818cf8;transition-delay:0.05s"><div class="text-3xl mb-3">&#x1F37D;</div><div class="font-bold text-slate-900 mb-1">Mains</div><div class="text-slate-500 text-sm mb-3">5-25 min focused tasks that build real momentum.</div><div class="text-xs text-indigo-500 font-semibold">20 activities</div></div>
-      <div class="bento fade-up" style="border-top:3px solid #f59e0b;transition-delay:0.1s"><div class="text-3xl mb-3">&#x1F370;</div><div class="font-bold text-slate-900 mb-1">Desserts</div><div class="text-slate-500 text-sm mb-3">Guilt-free rewards. Use after wins to reinforce the loop.</div><div class="text-xs text-amber-500 font-semibold">15 activities</div></div>
-      <div class="bento fade-up" style="border-top:3px solid #22c55e;transition-delay:0.15s"><div class="text-3xl mb-3">&#x1F300;</div><div class="font-bold text-slate-900 mb-1">Sensory Resets</div><div class="text-slate-500 text-sm mb-3">Nervous system regulation tools for overwhelm moments.</div><div class="text-xs text-green-500 font-semibold">15 activities</div></div>
-      <div class="bento fade-up" style="border-top:3px solid #e879f9;transition-delay:0.2s"><div class="text-3xl mb-3">&#x1F3A7;</div><div class="font-bold text-slate-900 mb-1">Sides</div><div class="text-slate-500 text-sm mb-3">Background boosters &mdash; use while doing other things.</div><div class="text-xs text-fuchsia-500 font-semibold">10 activities</div></div>
-      <div class="bento fade-up" style="border-top:3px solid #f97316;transition-delay:0.25s"><div class="text-3xl mb-3">&#x1F3C3;</div><div class="font-bold text-slate-900 mb-1">Movement</div><div class="text-slate-500 text-sm mb-3">Exercise and movement breaks. The #1 ADHD intervention.</div><div class="text-xs text-orange-500 font-semibold">15 activities</div></div>
-      <div class="bento fade-up" style="border-top:3px solid #38bdf8;transition-delay:0.3s"><div class="text-3xl mb-3">&#x1F91D;</div><div class="font-bold text-slate-900 mb-1">Social</div><div class="text-slate-500 text-sm mb-3">Connection-based dopamine. Humans are wired for this.</div><div class="text-xs text-sky-500 font-semibold">10 activities</div></div>
-      <div class="bento fade-up bg-gradient-to-br from-teal-50 to-indigo-50 border-teal-200" style="transition-delay:0.35s"><div class="text-3xl mb-3">&#x2728;</div><div class="font-bold text-slate-900 mb-1">+ Custom Items</div><div class="text-slate-500 text-sm mb-3">Add your own activities. Build a menu that is truly yours.</div><div class="text-xs text-teal-600 font-semibold">Unlimited</div></div>
-    </div>
-  </div>
-</section>
 <!-- FEATURES -->
 <section id="features" class="py-20 px-6 bg-white">
   <div class="max-w-6xl mx-auto">
     <div class="text-center mb-14 fade-up">
-      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Built for the ADHD Brain</h2>
-      <p class="text-slate-500 text-lg">Every feature exists because ADHD research said it should.</p>
+      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">What's actually inside</h2>
+      <p class="text-slate-500 text-lg max-w-xl mx-auto">No fluff. Every feature exists because it genuinely helps ADHD brains — backed by research, not vibes.</p>
     </div>
     <div class="grid md:grid-cols-3 gap-5">
       <div class="bento md:col-span-2 bg-gradient-to-br from-slate-900 to-slate-800 border-slate-700 fade-up">
         <div class="text-3xl mb-4">&#x1F3AE;</div>
-        <h3 class="font-bold text-white text-xl mb-2">Points, Levels and Streak Multiplier</h3>
-        <p class="text-slate-400 text-sm leading-relaxed mb-4">Earn XP for every activity. Build a streak for 3 days and get 1.5x points. 7 days = 2x. 14 days = 3x. Level up from Seedling all the way to Brain Boss. Immediate dopamine from numbers going up.</p>
+        <h3 class="font-bold text-white text-xl mb-2">XP, Levels and Streak Multipliers</h3>
+        <p class="text-slate-400 text-sm leading-relaxed mb-4">Earn XP for every activity. Build a streak for 3 days and get 1.5x points. 7 days = 2x. 14 days = 3x. Level up from Seedling all the way to Brain Boss. Yes, watching numbers go up is the point — that's dopamine, and it's real.</p>
         <div class="flex gap-2 flex-wrap">
           <span class="bg-teal-500/20 text-teal-400 border border-teal-500/30 rounded-full px-3 py-1 text-xs font-semibold">10 Levels</span>
           <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full px-3 py-1 text-xs font-semibold">&#x1F525; Streak Multiplier</span>
@@ -242,27 +208,27 @@
       <div class="bento bg-teal-500 border-teal-400 fade-up" style="transition-delay:0.1s">
         <div class="text-3xl mb-4">&#x1F465;</div>
         <h3 class="font-bold text-white text-xl mb-2">Body Double Mode</h3>
-        <p class="text-white/80 text-sm leading-relaxed">10-minute focus session with a breathing companion. You are not alone. Rotating encouragement messages. +5 min button.</p>
+        <p class="text-white/80 text-sm leading-relaxed">10-minute focus session with a breathing companion. You're not alone. Rotating encouragement. +5 min button for when you're actually in the zone.</p>
       </div>
       <div class="bento fade-up" style="transition-delay:0.15s">
         <div class="text-3xl mb-4">&#x26A1;</div>
         <h3 class="font-bold text-slate-900 text-lg mb-2">Before/After Energy Tracker</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">Rate your energy before and after each activity. See proof that the menu actually works. A huge motivation booster.</p>
+        <p class="text-slate-500 text-sm leading-relaxed">Rate your energy before and after. See proof that the menu actually works. Turns out, "I feel better" is more motivating when you can see it.</p>
       </div>
       <div class="bento fade-up" style="transition-delay:0.2s">
         <div class="text-3xl mb-4">&#x2728;</div>
-        <h3 class="font-bold text-slate-900 text-lg mb-2">Daily Smart Suggestion</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">Cannot decide? The app picks for you &mdash; weighted toward quick wins you have not done yet today. Removes decision paralysis instantly.</p>
+        <h3 class="font-bold text-slate-900 text-lg mb-2">Today's Pick (Can't Decide? Same.)</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Can't decide? The app picks for you — weighted toward quick wins you haven't done yet today. Decision paralysis: solved.</p>
       </div>
       <div class="bento fade-up" style="transition-delay:0.25s">
         <div class="text-3xl mb-4">&#x1F4C5;</div>
         <h3 class="font-bold text-slate-900 text-lg mb-2">30-Day History Heatmap</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">Visual calendar showing your activity patterns. Monthly summary. See your progress at a glance.</p>
+        <p class="text-slate-500 text-sm leading-relaxed">Visual calendar of your activity patterns. Not to guilt you — to show you how far you've actually come. Progress is real even when it doesn't feel like it.</p>
       </div>
       <div class="bento md:col-span-2 bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100 fade-up" style="transition-delay:0.3s">
         <div class="text-3xl mb-4">&#x1F46A;</div>
-        <h3 class="font-bold text-slate-900 text-xl mb-2">Age-Adaptive for the Whole Family</h3>
-        <p class="text-slate-500 text-sm leading-relaxed mb-4">One app, three experiences. Children (8-12) get playful activities and gentle music. Teens (13-17) get lo-fi vibes and relatable tasks. Adults (18+) get deep focus ambient and real-life productivity tools.</p>
+        <h3 class="font-bold text-slate-900 text-xl mb-2">Works for the Whole Family</h3>
+        <p class="text-slate-500 text-sm leading-relaxed mb-4">One app, three experiences. Kids (8-12) get playful activities and gentle music. Teens (13-17) get lo-fi vibes and relatable tasks. Adults (18+) get deep focus ambient and real-life tools. Because ADHD doesn't have an age limit.</p>
         <div class="flex gap-3 flex-wrap">
           <span class="bg-white border border-indigo-200 rounded-full px-3 py-1 text-xs font-semibold text-indigo-600">Child (8-12)</span>
           <span class="bg-white border border-purple-200 rounded-full px-3 py-1 text-xs font-semibold text-purple-600">Teen (13-17)</span>
@@ -271,8 +237,55 @@
       </div>
       <div class="bento fade-up" style="transition-delay:0.35s">
         <div class="text-3xl mb-4">&#x1F52C;</div>
-        <h3 class="font-bold text-slate-900 text-lg mb-2">Science Behind Every Activity</h3>
-        <p class="text-slate-500 text-sm leading-relaxed">Tap "?" on any card to see the peer-reviewed research explaining why it works for ADHD brains. Not just tips &mdash; evidence.</p>
+        <h3 class="font-bold text-slate-900 text-lg mb-2">The Science, Not Just the Vibes</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Tap "?" on any card to see the peer-reviewed research behind it. Not because you need to justify taking a walk — but because knowing why it works makes it easier to actually do it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORIES -->
+<section class="py-20 px-6 bg-slate-50">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14 fade-up">
+      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">100+ activities. Zero judgment.</h2>
+      <p class="text-slate-500 text-lg max-w-xl mx-auto">Yes, drinking water counts. Yes, a 1-minute stretch counts. Every single thing you do is a win.</p>
+    </div>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bento fade-up" style="border-top:3px solid #00b4a6"><div class="text-3xl mb-3">&#x1F957;</div><div class="font-bold text-slate-900 mb-1">Quick Wins</div><div class="text-slate-500 text-sm mb-3">1-5 min starters. For when motivation is at absolute zero.</div><div class="text-xs text-teal-600 font-semibold">20 activities</div></div>
+      <div class="bento fade-up" style="border-top:3px solid #818cf8;transition-delay:0.05s"><div class="text-3xl mb-3">&#x1F37D;</div><div class="font-bold text-slate-900 mb-1">Deep Work</div><div class="text-slate-500 text-sm mb-3">5-25 min focused tasks that build real momentum.</div><div class="text-xs text-indigo-500 font-semibold">20 activities</div></div>
+      <div class="bento fade-up" style="border-top:3px solid #f59e0b;transition-delay:0.1s"><div class="text-3xl mb-3">&#x1F370;</div><div class="font-bold text-slate-900 mb-1">Guilt-Free Rewards</div><div class="text-slate-500 text-sm mb-3">Use after wins to reinforce the loop. You earned it.</div><div class="text-xs text-amber-500 font-semibold">15 activities</div></div>
+      <div class="bento fade-up" style="border-top:3px solid #22c55e;transition-delay:0.15s"><div class="text-3xl mb-3">&#x1F300;</div><div class="font-bold text-slate-900 mb-1">Sensory Resets</div><div class="text-slate-500 text-sm mb-3">Nervous system tools for when everything is too much.</div><div class="text-xs text-green-500 font-semibold">15 activities</div></div>
+      <div class="bento fade-up" style="border-top:3px solid #e879f9;transition-delay:0.2s"><div class="text-3xl mb-3">&#x1F3A7;</div><div class="font-bold text-slate-900 mb-1">Background Boosters</div><div class="text-slate-500 text-sm mb-3">Use while doing other things. Multitasking, but make it helpful.</div><div class="text-xs text-fuchsia-500 font-semibold">10 activities</div></div>
+      <div class="bento fade-up" style="border-top:3px solid #f97316;transition-delay:0.25s"><div class="text-3xl mb-3">&#x1F3C3;</div><div class="font-bold text-slate-900 mb-1">Movement</div><div class="text-slate-500 text-sm mb-3">The #1 ADHD intervention. Even 2 minutes counts.</div><div class="text-xs text-orange-500 font-semibold">15 activities</div></div>
+      <div class="bento fade-up" style="border-top:3px solid #38bdf8;transition-delay:0.3s"><div class="text-3xl mb-3">&#x1F91D;</div><div class="font-bold text-slate-900 mb-1">Social Sparks</div><div class="text-slate-500 text-sm mb-3">Connection-based dopamine. Humans are wired for this.</div><div class="text-xs text-sky-500 font-semibold">10 activities</div></div>
+      <div class="bento fade-up bg-gradient-to-br from-teal-50 to-indigo-50 border-teal-200" style="transition-delay:0.35s"><div class="text-3xl mb-3">&#x2728;</div><div class="font-bold text-slate-900 mb-1">+ Your Own Stuff</div><div class="text-slate-500 text-sm mb-3">Add whatever works for you. This is your menu, not mine.</div><div class="text-xs text-teal-600 font-semibold">Unlimited</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works" class="py-20 px-6 bg-white">
+  <div class="max-w-6xl mx-auto">
+    <div class="text-center mb-14 fade-up">
+      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Three steps. That's it.</h2>
+      <p class="text-slate-500 text-lg">No setup ritual. No onboarding quiz. Designed for the "I need this to work right now" brain.</p>
+    </div>
+    <div class="grid md:grid-cols-3 gap-8">
+      <div class="text-center fade-up">
+        <div class="w-14 h-14 rounded-2xl bg-teal-500 text-white text-xl font-black flex items-center justify-center mx-auto mb-5 shadow-lg">1</div>
+        <h3 class="font-bold text-slate-900 text-lg mb-2">Install in 60 seconds</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Open the link on your phone, tap "Add to Home Screen." Done. No App Store. No account. No email. Just the app.</p>
+      </div>
+      <div class="text-center fade-up" style="transition-delay:0.15s">
+        <div class="w-14 h-14 rounded-2xl bg-indigo-500 text-white text-xl font-black flex items-center justify-center mx-auto mb-5 shadow-lg">2</div>
+        <h3 class="font-bold text-slate-900 text-lg mb-2">Pick something (or let it pick)</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Browse by category and effort level. Can't decide? Tap "Today's Pick" and just do that one thing. One thing is enough.</p>
+      </div>
+      <div class="text-center fade-up" style="transition-delay:0.3s">
+        <div class="w-14 h-14 rounded-2xl bg-amber-500 text-white text-xl font-black flex items-center justify-center mx-auto mb-5 shadow-lg">3</div>
+        <h3 class="font-bold text-slate-900 text-lg mb-2">Tap Done. Collect your XP.</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Log the win. Earn XP. Build a streak. Watch your energy shift. The before/after slider makes the progress visible — because your brain needs to see it to believe it.</p>
       </div>
     </div>
   </div>
@@ -282,44 +295,60 @@
 <section class="py-20 px-6 bg-slate-50">
   <div class="max-w-6xl mx-auto">
     <div class="text-center mb-14 fade-up">
-      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Use It Your Way</h2>
-      <p class="text-slate-500 text-lg">Mobile app, desktop web version, or both. Your choice.</p>
+      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Use it however works for you</h2>
+      <p class="text-slate-500 text-lg">Phone, desktop, or paper on your wall. No wrong answer.</p>
     </div>
     <div class="grid md:grid-cols-3 gap-6">
       <div class="bento text-center fade-up border-2 border-teal-200 bg-teal-50">
         <div class="text-5xl mb-4">&#x1F4F1;</div>
         <h3 class="font-bold text-slate-900 text-lg mb-2">Mobile App</h3>
-        <p class="text-slate-500 text-sm leading-relaxed mb-4">Installs on your Android or iPhone home screen. Fullscreen, offline, native feel. Best experience for daily use.</p>
-        <a href="app/index.html" class="btn-p px-5 py-2.5 text-sm mx-auto"><i data-lucide="smartphone" style="width:15px;height:15px;"></i> Try the App</a>
+        <p class="text-slate-500 text-sm leading-relaxed mb-4">Installs on your home screen. Fullscreen, offline, native feel. Best for daily use — it's right there when you need it.</p>
+        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-sm mx-auto"><i data-lucide="smartphone" style="width:15px;height:15px;"></i> Get the App — $19.99</a>
       </div>
       <div class="bento text-center fade-up" style="transition-delay:0.1s">
         <div class="text-5xl mb-4">&#x1F5A5;</div>
-        <h3 class="font-bold text-slate-900 text-lg mb-2">Desktop Web Version</h3>
-        <p class="text-slate-500 text-sm leading-relaxed mb-4">Full sidebar navigation, optimized for larger screens. Great for planning sessions at your desk.</p>
+        <h3 class="font-bold text-slate-900 text-lg mb-2">Desktop Version</h3>
+        <p class="text-slate-500 text-sm leading-relaxed mb-4">Full sidebar navigation, optimized for bigger screens. Great for planning sessions when you're at your desk and actually have a minute.</p>
         <a href="#pricing" class="btn-g px-5 py-2.5 text-sm mx-auto"><i data-lucide="monitor" style="width:15px;height:15px;"></i> Get Desktop Version</a>
       </div>
       <div class="bento text-center fade-up" style="transition-delay:0.2s">
         <div class="text-5xl mb-4">&#x1F4C4;</div>
-        <h3 class="font-bold text-slate-900 text-lg mb-2">Printable PDF Guide</h3>
-        <p class="text-slate-500 text-sm leading-relaxed mb-4">A beautifully formatted PDF of all 100+ activities with the science references. Print it, stick it on your wall.</p>
+        <h3 class="font-bold text-slate-900 text-lg mb-2">Printable PDF</h3>
+        <p class="text-slate-500 text-sm leading-relaxed mb-4">All 100+ activities with the science references, beautifully formatted. Print it, stick it on your wall, circle the ones that work for you.</p>
         <a href="#pricing" class="btn-g px-5 py-2.5 text-sm mx-auto"><i data-lucide="file-text" style="width:15px;height:15px;"></i> Get PDF Version</a>
       </div>
     </div>
   </div>
 </section>
+
+<!-- TESTIMONIAL -->
+<section class="py-16 px-6 bg-white">
+  <div class="max-w-3xl mx-auto text-center fade-up">
+    <div class="text-5xl mb-6">&#x1F4AC;</div>
+    <blockquote class="text-2xl md:text-3xl font-bold text-slate-900 leading-snug mb-6">
+      "It's the first app that doesn't feel like a chore. It feels like a teammate."
+    </blockquote>
+    <p class="text-slate-400 text-sm">— Someone who also has 47 tabs open right now</p>
+    <div class="mt-10 inline-flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-6 py-4 text-amber-800 font-medium text-base">
+      <span class="text-2xl">&#x1F31F;</span>
+      No shame notifications. No "you missed a day" guilt trips. Just a fresh start and a new Today's Pick.
+    </div>
+  </div>
+</section>
+
 <!-- PRICING -->
-<section id="pricing" class="py-20 px-6 bg-white">
+<section id="pricing" class="py-20 px-6 bg-slate-50">
   <div class="max-w-6xl mx-auto">
     <div class="text-center mb-14 fade-up">
-      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Simple, One-Time Pricing</h2>
-      <p class="text-slate-500 text-lg">No subscription. No monthly fees. Pay once, use forever.</p>
+      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">One price. No tricks.</h2>
+      <p class="text-slate-500 text-lg">No subscription. No monthly fees. No "premium tier" that locks the good stuff. Pay once, it's yours forever.</p>
     </div>
     <div class="max-w-md mx-auto">
       <div class="bento border-2 border-teal-400 relative fade-up shadow-xl">
-        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-xs font-bold px-4 py-1.5 rounded-full">BEST VALUE</div>
+        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-teal-500 text-white text-xs font-bold px-4 py-1.5 rounded-full">EVERYTHING INCLUDED</div>
         <div class="text-center mb-6 pt-2">
-          <div class="text-5xl font-black text-slate-900 mb-1">$9</div>
-          <div class="text-slate-500 text-sm">One-time payment &middot; Instant access</div>
+          <div class="text-5xl font-black text-slate-900 mb-1">$19.99</div>
+          <div class="text-slate-500 text-sm">One-time · Instant access · Yours forever</div>
         </div>
         <ul class="space-y-3 mb-8">
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Mobile app (Android + iPhone)</li>
@@ -327,97 +356,108 @@
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Printable PDF activity guide</li>
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>100+ science-backed activities</li>
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Age-adaptive (child, teen, adult)</li>
-          <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Points, levels and streak system</li>
+          <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>XP, levels and streak system</li>
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Body Double mode</li>
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Works fully offline, no account needed</li>
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Free updates forever</li>
         </ul>
-        <a href="https://gumroad.com" target="_blank" rel="noopener" class="btn-p w-full py-4 text-base justify-center">
-          <i data-lucide="shopping-cart" style="width:18px;height:18px;"></i> Buy Now on Gumroad
+        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p w-full py-4 text-base justify-center">
+          <i data-lucide="shopping-cart" style="width:18px;height:18px;"></i> Get It on Gumroad — $19.99
         </a>
-        <p class="text-center text-xs text-slate-400 mt-3">Secure checkout &middot; Instant delivery &middot; 30-day refund policy</p>
+        <p class="text-center text-xs text-slate-400 mt-3">Secure checkout · Instant delivery · 30-day refund, no questions asked</p>
       </div>
     </div>
+    <p class="text-center text-slate-400 text-sm mt-8 max-w-md mx-auto">
+      Questions before buying? Check the FAQ below or reach out — happy to help.
+    </p>
   </div>
 </section>
 
 <!-- FAQ -->
-<section id="faq" class="py-20 px-6 bg-slate-50">
+<section id="faq" class="py-20 px-6 bg-white">
   <div class="max-w-3xl mx-auto">
     <div class="text-center mb-14 fade-up">
-      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Frequently Asked Questions</h2>
+      <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-4">Questions you probably have</h2>
     </div>
     <div class="space-y-3 fade-up">
       <div class="faq-item bento cursor-pointer" onclick="toggleFaq(this)">
         <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">Do I need to create an account?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
-        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">No account, no sign-up, no email required. Everything runs on your device. All data is stored locally and nothing is sent to any server.</p></div>
+        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Nope. No account, no sign-up, no email. Everything runs on your device. Your data stays local and nothing is sent anywhere.</p></div>
       </div>
       <div class="faq-item bento cursor-pointer" onclick="toggleFaq(this)">
         <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">Does it work on iPhone?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
-        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Yes. Open the app link in Safari, tap the Share button, then "Add to Home Screen." You must use Safari on iOS &mdash; Chrome on iPhone does not support this install method.</p></div>
+        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Yes. Open the link in Safari, tap the Share button, then "Add to Home Screen." One thing to note: you need to use Safari on iOS — Chrome on iPhone doesn't support this install method.</p></div>
       </div>
       <div class="faq-item bento cursor-pointer" onclick="toggleFaq(this)">
         <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">Does it work offline?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
-        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Yes, fully. Once installed, the app works without any internet connection. Everything is cached on your device after the first load.</p></div>
+        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Fully. Once installed, the app works without any internet connection. Everything is cached on your device after the first load.</p></div>
       </div>
       <div class="faq-item bento cursor-pointer" onclick="toggleFaq(this)">
-        <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">Is this suitable for children?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
-        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Yes. There is a dedicated child mode (ages 8-12) with age-appropriate activities, playful music, and gentler pacing. Parents can set it up and it will only show relevant content.</p></div>
+        <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">Is this suitable for kids?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
+        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Yes. There's a dedicated child mode (ages 8-12) with age-appropriate activities, playful music, and gentler pacing. Parents can set it up and it'll only show relevant content.</p></div>
       </div>
       <div class="faq-item bento cursor-pointer" onclick="toggleFaq(this)">
-        <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">What is your refund policy?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
-        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">If you are not satisfied within 30 days, email raihan.mqbul@gmail.com and I will issue a full refund with no questions asked.</p></div>
+        <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">What if it doesn't work for me?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
+        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">30-day refund, no questions asked. Seriously. If it's not clicking for you, just reach out and I'll sort it. I'd rather you have your $19.99 back than feel stuck with something that isn't helping.</p></div>
       </div>
       <div class="faq-item bento cursor-pointer" onclick="toggleFaq(this)">
-        <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">Will I get future updates?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
-        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Yes, free forever. Since the app is hosted online, any improvements are automatically available the next time you open it.</p></div>
+        <div class="flex items-center justify-between gap-4"><span class="font-semibold text-slate-900">I broke my streak. Is it over?</span><i data-lucide="plus" class="faq-icon" style="width:20px;height:20px;min-width:20px;color:#94a3b8;"></i></div>
+        <div class="faq-answer"><p class="text-slate-500 text-sm mt-3 leading-relaxed">Not even close. No shame notifications, no "you failed" screens. Just a fresh start and a new Today's Pick. Missing a day is normal. Getting back is the whole point.</p></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- FINAL CTA -->
-<section class="py-20 px-6 bg-gradient-to-br from-slate-900 to-slate-800">
-  <div class="max-w-3xl mx-auto text-center fade-up">
-    <div class="text-6xl mb-6">&#x1F9E0;</div>
-    <h2 class="text-3xl md:text-4xl font-black text-white mb-4">Your brain is not broken.<br/>It just needs the right menu.</h2>
-    <p class="text-slate-400 text-lg mb-10 max-w-xl mx-auto">Stop fighting your ADHD brain. Start working with it. One small activity at a time.</p>
-    <a href="https://gumroad.com" target="_blank" rel="noopener" class="btn-p px-10 py-4 text-base mx-auto">
-      <i data-lucide="zap" style="width:18px;height:18px;"></i> Get Instant Access for $9
-    </a>
-    <p class="text-slate-500 text-sm mt-4">One-time payment &middot; No subscription &middot; 30-day refund guarantee</p>
+<!-- FOOTER CTA -->
+<section class="py-20 px-6 bg-gradient-to-b from-slate-900 to-slate-950 text-white text-center">
+  <div class="max-w-2xl mx-auto fade-up">
+    <div class="text-5xl mb-6">&#x1F9E0;</div>
+    <h2 class="text-3xl md:text-4xl font-black mb-4">Stop fighting your brain.</h2>
+    <p class="text-slate-300 text-lg mb-8 leading-relaxed">
+      You don't need more discipline. You just need a better menu. Let's turn "I'll do it later" into "done and dusted" — one small win at a time.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-8 py-4 text-base justify-center">
+        <i data-lucide="zap" style="width:18px;height:18px;"></i> Get the Dopamine Menu — $19.99
+      </a>
+    </div>
+    <p class="text-slate-500 text-sm mt-6">One-time payment · No account · Works offline · 30-day refund</p>
   </div>
 </section>
 
 <!-- FOOTER -->
-<footer class="py-10 px-6 bg-slate-900 border-t border-slate-800">
-  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
-    <div class="flex items-center gap-2">
-      <span class="text-xl">&#x1F9E0;</span>
-      <span class="font-semibold text-slate-300">ADHD Dopamine Menu Tracker</span>
-    </div>
-    <div class="flex gap-6">
-      <a href="#features" class="hover:text-slate-300 transition-colors">Features</a>
-      <a href="#pricing" class="hover:text-slate-300 transition-colors">Pricing</a>
-      <a href="#faq" class="hover:text-slate-300 transition-colors">FAQ</a>
-      <a href="mailto:raihan.mqbul@gmail.com" class="hover:text-slate-300 transition-colors">Support</a>
-    </div>
-    <div class="text-slate-600 text-xs">2025 ADHD Dopamine Menu. All rights reserved.</div>
+<footer class="py-8 px-6 bg-slate-950 text-center text-slate-500 text-sm">
+  <div class="flex items-center justify-center gap-2 mb-2">
+    <span class="text-xl">&#x1F9E0;</span>
+    <span class="font-semibold text-slate-400">Dopamine Menu</span>
   </div>
+  <p>Made with a lot of tabs open and a genuine desire to help.</p>
 </footer>
 
 <script>
-  if (typeof lucide !== 'undefined') lucide.createIcons();
-  function toggleFaq(el) {
-    const a = el.querySelector('.faq-answer'), ic = el.querySelector('.faq-icon'), open = a.classList.contains('open');
-    document.querySelectorAll('.faq-answer').forEach(x => x.classList.remove('open'));
-    document.querySelectorAll('.faq-icon').forEach(x => x.classList.remove('open'));
-    if (!open) { a.classList.add('open'); ic.classList.add('open'); }
+  // Scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // FAQ toggle
+  function toggleFaq(item) {
+    const answer = item.querySelector('.faq-answer');
+    const icon = item.querySelector('.faq-icon');
+    const isOpen = answer.classList.contains('open');
+    document.querySelectorAll('.faq-answer.open').forEach(a => a.classList.remove('open'));
+    document.querySelectorAll('.faq-icon.open').forEach(i => i.classList.remove('open'));
+    if (!isOpen) { answer.classList.add('open'); icon.classList.add('open'); }
   }
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+  // Navbar scroll shadow
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').style.boxShadow = window.scrollY > 10 ? '0 2px 20px rgba(0,0,0,0.08)' : 'none';
+  });
+
+  // Init Lucide icons
+  lucide.createIcons();
 </script>
 </body>
 </html>
