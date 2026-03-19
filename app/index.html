@@ -1,0 +1,2895 @@
+<!-- ADHD Dopamine Menu Tracker – Fully offline PWA – Age-adaptive music – Built for ADHD brains -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="Your brain's personalized dopamine menu" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Dopamine Menu" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>ADHD Dopamine Menu Tracker</title>
+
+  <!-- App Icons -->
+  <link rel="apple-touch-icon" href="icons/icon-180.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%2300b4a6'/><text x='16' y='22' text-anchor='middle' font-size='18'>🧠</text></svg>" />
+
+  <!-- CDN Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <style>
+    /* ── Design Tokens ── */
+    :root {
+      --bg:        #0f172a;
+      --accent:    #00b4a6;
+      --surface:   #1e293b;
+      --raised:    #334155;
+      --text:      #f1f5f9;
+      --muted:     #94a3b8;
+      --success:   #22c55e;
+      --warning:   #f59e0b;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Tap targets */
+    button, [role="button"], input, select, label {
+      min-height: 48px;
+      cursor: pointer;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--raised); border-radius: 3px; }
+
+    /* ── Animations ── */
+    @keyframes fadeIn   { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeOut  { from { opacity: 1; } to { opacity: 0; } }
+    @keyframes slideUp  { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    @keyframes slideDown{ from { transform: translateY(0); } to { transform: translateY(100%); } }
+    @keyframes scaleWin { 0%{transform:scale(1)} 50%{transform:scale(1.05)} 100%{transform:scale(1)} }
+    @keyframes glow     { 0%,100%{box-shadow:0 0 0 0 rgba(0,180,166,0)} 50%{box-shadow:0 0 20px 6px rgba(0,180,166,0.5)} }
+
+    .fade-in  { animation: fadeIn  0.3s ease-out forwards; }
+    .fade-out { animation: fadeOut 0.3s ease-out forwards; }
+    .slide-up { animation: slideUp 0.3s ease-out forwards; }
+    .win-pop  { animation: scaleWin 0.25s ease-out; }
+    .glow-highlight { animation: glow 2s ease-in-out; }
+
+    /* ── Layout ── */
+    html, body {
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
+    }
+
+    #app-shell {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* ── Native Top Header Bar ── */
+    #top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      padding-top: calc(0.75rem + env(safe-area-inset-top));
+      height: calc(56px + env(safe-area-inset-top));
+      background: var(--surface);
+      border-bottom: 1px solid var(--raised);
+      flex-shrink: 0;
+      z-index: 30;
+    }
+
+    .top-bar-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+
+    .top-bar-action {
+      background: none;
+      border: none;
+      color: var(--accent);
+      font-size: 0.85rem;
+      font-weight: 600;
+      min-height: unset;
+      padding: 0.4rem 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .top-bar-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Sidebar — hidden, mobile only */
+    #sidebar { display: none !important; }
+
+    /* Main content */
+    #content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      position: relative;
+    }
+
+    .screen {
+      display: none;
+      padding: 1rem;
+      padding-bottom: calc(1rem + env(safe-area-inset-bottom) + 70px);
+      min-height: 100%;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    .screen.active { display: block; }
+
+    /* ── Native Bottom Tab Bar ── */
+    #bottom-nav {
+      position: relative;
+      background: var(--surface);
+      border-top: 1px solid var(--raised);
+      display: flex;
+      z-index: 40;
+      flex-shrink: 0;
+      padding-bottom: env(safe-area-inset-bottom);
+      height: calc(60px + env(safe-area-inset-bottom));
+    }
+
+    .bottom-nav-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 0.6rem;
+      font-weight: 500;
+      transition: color 0.15s ease-out;
+      min-height: unset;
+      padding: 0.5rem 0 0.3rem;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .bottom-nav-btn svg { width: 22px; height: 22px; stroke-width: 1.8; }
+
+    /* Active pill indicator above icon */
+    .bottom-nav-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 32px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 0 0 3px 3px;
+      transition: transform 0.2s ease-out;
+    }
+
+    .bottom-nav-btn.active { color: var(--accent); }
+    .bottom-nav-btn.active::before { transform: translateX(-50%) scaleX(1); }
+
+    /* Active icon gets a subtle filled background */
+    .bottom-nav-btn.active svg {
+      filter: drop-shadow(0 0 4px rgba(0,180,166,0.4));
+    }
+
+    /* ── Welcome Modal ── */
+    #welcome-modal {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .welcome-inner {
+      max-width: 480px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .age-card {
+      background: var(--surface);
+      border: 2px solid var(--raised);
+      border-radius: 16px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+      text-align: left;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .age-card:hover {
+      border-color: var(--accent);
+      background: rgba(0,180,166,0.08);
+      transform: translateY(-2px);
+    }
+
+    /* ── Home Tile Grid ── */
+    #home-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.65rem;
+      align-items: start;
+    }
+
+    @media (min-width: 480px) {
+      #home-items { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      #home-items { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.75rem; }
+    }
+    @media (min-width: 1100px) {
+      #home-items { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+    }
+
+    /* ── Tile Card ── */
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--raised);
+      border-top: 3px solid var(--card-accent, var(--raised));
+      border-radius: 14px;
+      padding: 0.85rem 0.75rem 0.65rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.4rem;
+      /* all cards in a row share the same height → button always on same line */
+      align-self: stretch;
+      transition: transform 0.2s ease-out, border-color 0.2s ease-out, box-shadow 0.2s ease-out;
+      cursor: default;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Subtle shimmer layer on hover */
+    .item-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(0,180,166,0.07) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.25s ease-out;
+      pointer-events: none;
+    }
+
+    .item-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--card-accent, var(--accent));
+      box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    }
+
+    .item-card:hover::before { opacity: 1; }
+
+    /* Category accent colors */
+    .item-card[data-cat="appetizer"] { --card-accent: #00b4a6; }
+    .item-card[data-cat="main"]      { --card-accent: #818cf8; }
+    .item-card[data-cat="dessert"]   { --card-accent: #f59e0b; }
+    .item-card[data-cat="sensory"]   { --card-accent: #22c55e; }
+    .item-card[data-cat="sides"]     { --card-accent: #e879f9; }
+    .item-card[data-cat="movement"]  { --card-accent: #f97316; }
+    .item-card[data-cat="social"]    { --card-accent: #38bdf8; }
+
+    /* ── Why This? button & popover ── */
+    .why-btn {
+      position: absolute;
+      top: 0.45rem;
+      right: 0.45rem;
+      width: 22px;
+      height: 22px;
+      min-height: unset;
+      border-radius: 50%;
+      border: 1.5px solid var(--card-accent, var(--accent));
+      background: transparent;
+      color: var(--card-accent, var(--accent));
+      font-size: 0.7rem;
+      font-weight: 800;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s ease-out, color 0.2s ease-out;
+      z-index: 2;
+      padding: 0;
+    }
+
+    .why-btn:hover {
+      background: var(--card-accent, var(--accent));
+      color: #fff;
+    }
+
+    .why-popover {
+      position: fixed;
+      background: #1e293b;
+      border: 1px solid var(--raised);
+      border-left: 3px solid var(--accent);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      max-width: 260px;
+      width: max-content;
+      z-index: 300;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      animation: fadeIn 0.2s ease-out;
+      pointer-events: none;
+    }
+
+    .why-popover-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+      line-height: 1.4;
+    }
+
+    .why-popover-body {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .why-popover-ref {
+      font-size: 0.7rem;
+      color: var(--accent);
+      font-style: italic;
+      margin-top: 0.5rem;
+      display: block;
+    }
+
+    #why-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 299;
+      display: none;
+    }
+
+    .tile-emoji {
+      font-size: 2.2rem;
+      line-height: 1;
+      display: block;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .tile-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .tile-meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      flex-wrap: wrap;
+    }
+
+    .win-btn {
+      background: var(--card-accent, var(--accent));
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.45rem 0.6rem;
+      font-size: 0.78rem;
+      font-weight: 700;
+      width: 100%;
+      min-height: 36px;
+      margin-top: auto; /* pushes button to bottom of card */
+      transition: all 0.2s ease-out;
+      letter-spacing: 0.01em;
+    }
+
+    .win-btn:hover { filter: brightness(1.15); transform: translateY(-1px); }
+    .win-btn:active { transform: scale(0.96); }
+
+    /* ── Category Tabs ── */
+    .cat-tabs {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+      scrollbar-width: none;
+    }
+    .cat-tabs::-webkit-scrollbar { display: none; }
+
+    .cat-tab {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: var(--surface);
+      color: var(--muted);
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      white-space: nowrap;
+      min-height: 40px;
+      transition: all 0.2s ease-out;
+      cursor: pointer;
+    }
+
+    .cat-tab.active {
+      background: rgba(0,180,166,0.2);
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    /* ── Search ── */
+    .search-wrap {
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--raised);
+      border-radius: 10px;
+      padding: 0.75rem 2.5rem 0.75rem 1rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      min-height: 48px;
+      outline: none;
+      transition: border-color 0.2s ease-out;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--muted); }
+
+    .search-clear {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.1rem;
+      min-height: auto;
+      padding: 0.25rem;
+      cursor: pointer;
+    }
+
+    /* ── Toggle Switch ── */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 26px;
+      min-height: auto;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: var(--raised);
+      border-radius: 13px;
+      transition: background 0.2s ease-out;
+      cursor: pointer;
+    }
+
+    .toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 20px; height: 20px;
+      left: 3px; top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s ease-out;
+    }
+
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider::before { transform: translateX(22px); }
+
+    /* ── Heat Map ── */
+    .heatmap-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+    }
+
+    .heat-cell {
+      aspect-ratio: 1;
+      border-radius: 4px;
+      background: var(--surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: transform 0.15s ease-out;
+      min-height: auto;
+    }
+
+    .heat-cell:hover { transform: scale(1.1); }
+
+    /* ── Slide-up Panel ── */
+    #day-panel-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 50;
+      display: none;
+    }
+
+    #day-panel {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--surface);
+      border-radius: 20px 20px 0 0;
+      padding: 1.5rem;
+      z-index: 51;
+      max-height: 70vh;
+      overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.3s ease-out;
+    }
+
+    #day-panel.open { transform: translateY(0); }
+
+    /* ── Badges ── */
+    .age-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 10px;
+      background: var(--raised);
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .time-badge {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    /* ── Misc ── */
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .card-surface {
+      background: var(--surface);
+      border: 1px solid var(--raised);
+      border-radius: 12px;
+      padding: 1.25rem;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      min-height: 48px;
+      transition: all 0.2s ease-out;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { background: #009e91; }
+
+    .btn-danger {
+      background: transparent;
+      color: #ef4444;
+      border: 1px solid #ef4444;
+      border-radius: 8px;
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      min-height: 48px;
+      transition: all 0.2s ease-out;
+      cursor: pointer;
+    }
+
+    .btn-danger:hover { background: rgba(239,68,68,0.1); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--raised);
+      border-radius: 8px;
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
+      min-height: 44px;
+      transition: all 0.2s ease-out;
+      cursor: pointer;
+    }
+
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+    .input-field {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--raised);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      min-height: 48px;
+      outline: none;
+      transition: border-color 0.2s ease-out;
+    }
+
+    .input-field:focus { border-color: var(--accent); }
+    .input-field::placeholder { color: var(--muted); }
+
+    select.input-field { cursor: pointer; }
+
+    .label-text {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 0.4rem;
+      display: block;
+    }
+
+    .streak-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(245,158,11,0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 20px;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .win-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      background: var(--raised);
+      border-radius: 8px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+    }
+
+    .empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: calc(80px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--raised);
+      color: var(--text);
+      padding: 0.75rem 1.5rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: all 0.3s ease-out;
+      z-index: 200;
+      pointer-events: none;
+      white-space: nowrap;
+      max-width: calc(100vw - 2rem);
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Drag handle */
+    .drag-handle {
+      cursor: grab;
+      color: var(--muted);
+      padding: 0 0.5rem;
+      min-height: auto;
+    }
+
+    .drag-handle:active { cursor: grabbing; }
+
+    .dragging { opacity: 0.5; }
+    .drag-over { border-color: var(--accent) !important; }
+
+    /* License checkmark */
+    .license-check {
+      color: var(--success);
+      font-size: 1.2rem;
+      display: none;
+    }
+
+    .license-check.visible { display: inline; }
+
+    /* Stuck highlight */
+    .stuck-highlight {
+      border-color: var(--accent) !important;
+      box-shadow: 0 0 0 2px rgba(0,180,166,0.3);
+    }
+
+    /* ── Build & Wins Tile Grid ── */
+    .build-grid, .wins-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 0.65rem;
+      align-items: start;
+    }
+
+    @media (min-width: 480px) {
+      .build-grid, .wins-grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); }
+    }
+    @media (min-width: 768px) {
+      .build-grid, .wins-grid { grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 0.75rem; }
+    }
+
+    /* Build tile */
+    .build-tile {
+      background: var(--surface);
+      border: 1px solid var(--raised);
+      border-top: 3px solid var(--card-accent, var(--raised));
+      border-radius: 14px;
+      padding: 0.75rem 0.65rem 0.65rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.35rem;
+      align-self: stretch;
+      position: relative;
+      transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+    }
+
+    .build-tile:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    .build-tile.dragging { opacity: 0.45; }
+    .build-tile.drag-over { border-color: var(--accent) !important; box-shadow: 0 0 0 2px rgba(0,180,166,0.3); }
+
+    .build-tile .tile-drag {
+      position: absolute;
+      top: 0.4rem;
+      left: 0.45rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      cursor: grab;
+      min-height: unset;
+      padding: 0;
+      background: none;
+      border: none;
+      line-height: 1;
+    }
+
+    .build-tile .tile-drag:active { cursor: grabbing; }
+
+    .build-tile .tile-delete {
+      position: absolute;
+      top: 0.3rem;
+      right: 0.4rem;
+      font-size: 0.8rem;
+      color: #ef4444;
+      cursor: pointer;
+      min-height: unset;
+      padding: 0;
+      background: none;
+      border: none;
+      line-height: 1;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .build-tile .tile-delete:hover { opacity: 1; }
+
+    .build-tile .tile-toggle-row {
+      margin-top: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      width: 100%;
+    }
+
+    .build-tile .tile-toggle-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    /* Wins tile */
+    .win-tile {
+      background: var(--surface);
+      border: 1px solid var(--raised);
+      border-top: 3px solid var(--card-accent, var(--raised));
+      border-radius: 14px;
+      padding: 0.85rem 0.75rem 0.65rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0.35rem;
+      align-self: stretch;
+      transition: transform 0.2s ease-out;
+    }
+
+    .win-tile:hover { transform: translateY(-2px); }
+
+    .win-tile .win-time-badge {
+      margin-top: auto;
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: var(--raised);
+      padding: 2px 8px;
+      border-radius: 10px;
+    }
+
+    /* Category section header in build grid */
+    .build-cat-header {
+      grid-column: 1 / -1;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.5rem 0 0.1rem;
+      border-bottom: 1px solid var(--raised);
+      margin-bottom: 0.1rem;
+    }
+
+    /* ── Points / Level System ── */
+    .xp-bar-wrap {
+      background: var(--raised);
+      border-radius: 20px;
+      height: 8px;
+      overflow: hidden;
+      margin-top: 0.4rem;
+    }
+    .xp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #22c55e);
+      border-radius: 20px;
+      transition: width 0.5s ease-out;
+    }
+    .level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: rgba(0,180,166,0.15);
+      color: var(--accent);
+      border: 1px solid rgba(0,180,166,0.35);
+      border-radius: 20px;
+      padding: 0.3rem 0.8rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+    .points-pop {
+      position: fixed;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--accent);
+      pointer-events: none;
+      z-index: 500;
+      animation: pointsPop 1.2s ease-out forwards;
+    }
+    @keyframes pointsPop {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      60%  { opacity: 1; transform: translateY(-40px) scale(1.2); }
+      100% { opacity: 0; transform: translateY(-70px) scale(0.9); }
+    }
+
+    /* ── Daily Suggestion Banner ── */
+    .suggestion-banner {
+      background: linear-gradient(135deg, rgba(0,180,166,0.12), rgba(129,140,248,0.08));
+      border: 1px solid rgba(0,180,166,0.3);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s ease-out;
+    }
+    .suggestion-banner:hover {
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    .suggestion-banner .sug-emoji { font-size: 1.8rem; flex-shrink: 0; }
+    .suggestion-banner .sug-label { font-size: 0.7rem; color: var(--accent); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .suggestion-banner .sug-name  { font-size: 0.9rem; font-weight: 600; color: var(--text); line-height: 1.3; }
+    .suggestion-banner .sug-time  { font-size: 0.75rem; color: var(--muted); }
+    .suggestion-banner .sug-refresh { margin-left: auto; color: var(--muted); font-size: 1rem; flex-shrink: 0; cursor: pointer; background: none; border: none; min-height: unset; padding: 0.25rem; transition: color 0.2s; }
+    .suggestion-banner .sug-refresh:hover { color: var(--accent); }
+
+    /* ── Energy Slider Modal ── */
+    #energy-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 400;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 1rem;
+    }
+    #energy-modal.open { display: flex; }
+    .energy-modal-inner {
+      background: var(--surface);
+      border-radius: 20px 20px 16px 16px;
+      padding: 1.5rem;
+      width: 100%;
+      max-width: 420px;
+      animation: slideUp 0.25s ease-out;
+    }
+    .energy-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--raised);
+      outline: none;
+      min-height: unset;
+      cursor: pointer;
+    }
+    .energy-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,180,166,0.4);
+    }
+    .energy-slider::-moz-range-thumb {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+      border: none;
+    }
+    .energy-emoji-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 1.4rem;
+      margin-top: 0.5rem;
+    }
+
+    /* ── Body Double Mode ── */
+    #body-double-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,20,40,0.97);
+      z-index: 600;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 2rem;
+    }
+    #body-double-overlay.open { display: flex; }
+    .bd-companion {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 35%, rgba(0,180,166,0.3), rgba(0,180,166,0.05));
+      border: 2px solid rgba(0,180,166,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      animation: bdBreath 4s ease-in-out infinite;
+    }
+    @keyframes bdBreath {
+      0%,100% { transform: scale(1);   box-shadow: 0 0 0 0 rgba(0,180,166,0.2); }
+      50%      { transform: scale(1.08); box-shadow: 0 0 30px 10px rgba(0,180,166,0.15); }
+    }
+    .bd-timer {
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.02em;
+    }
+    .bd-task-name {
+      font-size: 1rem;
+      color: var(--muted);
+      text-align: center;
+      max-width: 280px;
+      line-height: 1.5;
+    }
+    .bd-message {
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-style: italic;
+      text-align: center;
+    }
+    .bd-controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Audio Elements ── -->
+<audio id="audio-child" src="music-child.mp3" loop preload="none"></audio>
+<audio id="audio-teen"  src="music-teen.mp3"  loop preload="none"></audio>
+<audio id="audio-adult" src="music-adult.mp3" loop preload="none"></audio>
+
+<!-- ── Toast ── -->
+<div id="toast"></div>
+
+<!-- ── Welcome Modal ── -->
+<div id="welcome-modal">
+  <div class="welcome-inner">
+    <div style="font-size:3rem;margin-bottom:0.5rem;">🧠</div>
+    <h1 style="font-size:1.75rem;font-weight:800;color:var(--text);margin-bottom:0.5rem;">ADHD Dopamine Menu</h1>
+    <p style="color:var(--muted);margin-bottom:2rem;font-size:1rem;">Your brain's personalized dopamine menu</p>
+    <p style="color:var(--text);font-weight:600;margin-bottom:1rem;">Who's using this today?</p>
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
+      <button class="age-card" onclick="selectAgeGroup('child')">
+        <span style="font-size:2rem;">🧒</span>
+        <div>
+          <div style="font-weight:700;font-size:1rem;color:var(--text);">Child (8–12)</div>
+          <div style="font-size:0.85rem;color:var(--muted);">Playful activities, bright music, gentle pacing</div>
+        </div>
+      </button>
+      <button class="age-card" onclick="selectAgeGroup('teen')">
+        <span style="font-size:2rem;">🧑</span>
+        <div>
+          <div style="font-weight:700;font-size:1rem;color:var(--text);">Teen (13–17)</div>
+          <div style="font-size:0.85rem;color:var(--muted);">Lo-fi vibes, relatable tasks, no pressure</div>
+        </div>
+      </button>
+      <button class="age-card" onclick="selectAgeGroup('adult')">
+        <span style="font-size:2rem;">🧑‍💼</span>
+        <div>
+          <div style="font-weight:700;font-size:1rem;color:var(--text);">Adult (18+)</div>
+          <div style="font-size:0.85rem;color:var(--muted);">Deep focus ambient, real-life tasks, calm energy</div>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── App Shell ── -->
+<div id="app-shell" style="display:none;">
+
+  <!-- Native Top Bar -->
+  <header id="top-bar">
+    <div class="top-bar-logo">
+      <span style="font-size:1.4rem;line-height:1;">🧠</span>
+      <span class="top-bar-title" id="top-bar-title">My Menu</span>
+    </div>
+    <div id="top-bar-actions" style="display:flex;align-items:center;gap:0.25rem;"></div>
+  </header>
+
+  <!-- Content Area -->
+  <main id="content">
+
+    <!-- ── HOME SCREEN ── -->
+    <div id="screen-home" class="screen active">
+      <div style="margin-bottom:1rem;">
+        <div class="search-wrap">
+          <input id="search-input" class="search-input" type="text" placeholder="🔍 Search your menu..." oninput="onSearch(this.value)" />
+          <button class="search-clear" id="search-clear" onclick="clearSearch()" style="display:none;">✕</button>
+        </div>
+      </div>
+      <div class="cat-tabs" style="margin-bottom:1rem;" id="cat-tabs">
+        <button class="cat-tab active" data-cat="appetizer" onclick="setCategory('appetizer')">🥗 Appetizers</button>
+        <button class="cat-tab" data-cat="main" onclick="setCategory('main')">🍽️ Mains</button>
+        <button class="cat-tab" data-cat="dessert" onclick="setCategory('dessert')">🍰 Desserts</button>
+        <button class="cat-tab" data-cat="sensory" onclick="setCategory('sensory')">🌀 Sensory</button>
+        <button class="cat-tab" data-cat="sides" onclick="setCategory('sides')">🎧 Sides</button>
+        <button class="cat-tab" data-cat="movement" onclick="setCategory('movement')">🏃 Movement</button>
+        <button class="cat-tab" data-cat="social" onclick="setCategory('social')">🤝 Social</button>
+      </div>
+      <div id="suggestion-banner-wrap"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:0.5rem;">
+        <button class="btn-ghost" onclick="feelingStuck()" style="display:flex;align-items:center;gap:0.5rem;">
+          <i data-lucide="shuffle" style="width:16px;height:16px;"></i> Feeling stuck?
+        </button>
+        <div id="home-level-badge"></div>
+      </div>
+      <div id="home-items"></div>
+      <div id="home-empty" class="empty-state" style="display:none;">
+        <div class="emoji">🔍</div>
+        <div style="font-weight:600;color:var(--text);">Nothing found</div>
+        <div style="margin-top:0.5rem;">Try a different search or category</div>
+      </div>
+    </div>
+
+    <!-- ── BUILD SCREEN ── -->
+    <div id="screen-build" class="screen">
+
+      <!-- Add custom item form -->
+      <div class="card-surface" style="margin-bottom:1.5rem;">
+        <div style="font-weight:700;margin-bottom:1rem;color:var(--text);">➕ Add Custom Item</div>
+        <div style="display:grid;gap:0.75rem;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+            <div>
+              <label class="label-text">Emoji</label>
+              <input id="custom-emoji" class="input-field" type="text" placeholder="🎯" maxlength="4" style="font-size:1.5rem;text-align:center;" />
+            </div>
+            <div>
+              <label class="label-text">Category</label>
+              <select id="custom-category" class="input-field">
+                <option value="appetizer">🥗 Appetizer</option>
+                <option value="main">🍽️ Main</option>
+                <option value="dessert">🍰 Dessert</option>
+                <option value="sensory">🌀 Sensory</option>
+                <option value="sides">🎧 Sides</option>
+                <option value="movement">🏃 Movement</option>
+                <option value="social">🤝 Social</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="label-text">Activity Name</label>
+            <input id="custom-name" class="input-field" type="text" placeholder="e.g. Dance to one song" />
+          </div>
+          <div>
+            <label class="label-text">Time Estimate</label>
+            <input id="custom-time" class="input-field" type="text" placeholder="e.g. 3 min" />
+          </div>
+          <button class="btn-primary" onclick="addCustomItem()" style="width:100%;">Add to Menu</button>
+        </div>
+      </div>
+
+      <!-- Item list -->
+      <div style="font-weight:700;margin-bottom:0.75rem;color:var(--text);">Your Menu Items</div>
+      <div id="build-items" class="build-grid"></div>
+    </div>
+
+    <!-- ── WINS SCREEN ── -->
+    <div id="screen-wins" class="screen">
+      <div id="wins-summary" class="card-surface" style="margin-bottom:1.25rem;text-align:center;">
+        <div id="wins-count" style="font-size:3rem;font-weight:800;color:var(--accent);">0</div>
+        <div id="wins-message" style="color:var(--muted);margin-top:0.25rem;"></div>
+        <div style="margin-top:1rem;display:flex;align-items:center;justify-content:center;gap:0.75rem;flex-wrap:wrap;">
+          <span id="streak-badge" class="streak-badge">🔥 0 day streak</span>
+          <span id="wins-level-badge" class="level-badge">⭐ Level 1</span>
+        </div>
+        <div style="margin-top:0.75rem;">
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--muted);margin-bottom:0.3rem;">
+            <span id="wins-points-label">0 XP</span>
+            <span id="wins-points-next"></span>
+          </div>
+          <div class="xp-bar-wrap"><div class="xp-bar-fill" id="wins-xp-bar" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-start;align-items:center;margin-bottom:1rem;">
+        <button class="btn-ghost" onclick="openBodyDouble()" style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;">
+          👥 Body Double
+        </button>
+      </div>
+      <div id="wins-list" class="wins-grid"></div>
+      <div id="wins-empty" class="empty-state" style="display:none;">
+        <div class="emoji">🌱</div>
+        <div style="font-weight:600;color:var(--text);">No wins yet today</div>
+        <div style="margin-top:0.5rem;">Head to the menu and pick something small. You've got this.</div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY SCREEN ── -->
+    <div id="screen-history" class="screen">
+      <div class="card-surface" style="margin-bottom:1.25rem;">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--text);">Last 30 Days</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem;flex-wrap:wrap;">
+          <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:var(--muted);">
+            <span style="width:12px;height:12px;border-radius:2px;background:var(--surface);border:1px solid var(--raised);display:inline-block;"></span> 0 wins
+          </span>
+          <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:var(--muted);">
+            <span style="width:12px;height:12px;border-radius:2px;background:rgba(0,180,166,0.4);display:inline-block;"></span> 1–2
+          </span>
+          <span style="display:flex;align-items:center;gap:0.3rem;font-size:0.8rem;color:var(--muted);">
+            <span style="width:12px;height:12px;border-radius:2px;background:rgba(0,180,166,0.7);display:inline-block;"></span> 3+
+          </span>
+        </div>
+        <div class="heatmap-grid" id="heatmap"></div>
+      </div>
+      <div class="card-surface" id="monthly-summary">
+        <div style="font-weight:700;margin-bottom:0.75rem;color:var(--text);">Monthly Summary</div>
+        <div id="summary-content" style="display:grid;gap:0.5rem;"></div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS SCREEN ── -->
+    <div id="screen-settings" class="screen">
+
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- Music toggle -->
+        <div class="card-surface">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <div style="font-weight:600;color:var(--text);">🎵 Calming Background Music</div>
+              <div style="font-size:0.85rem;color:var(--muted);margin-top:0.2rem;">Age-adaptive ambient tracks</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="music-toggle" onchange="toggleMusic(this.checked)" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Age group -->
+        <div class="card-surface">
+          <div style="font-weight:600;color:var(--text);margin-bottom:0.75rem;">👤 Age Group</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;" id="age-selector">
+            <button class="age-select-btn" data-age="child" onclick="changeAgeGroup('child')" style="padding:0.75rem;border-radius:8px;border:2px solid var(--raised);background:var(--surface);color:var(--text);font-size:0.85rem;font-weight:600;transition:all 0.2s ease-out;min-height:48px;cursor:pointer;">🧒 Child</button>
+            <button class="age-select-btn" data-age="teen" onclick="changeAgeGroup('teen')" style="padding:0.75rem;border-radius:8px;border:2px solid var(--raised);background:var(--surface);color:var(--text);font-size:0.85rem;font-weight:600;transition:all 0.2s ease-out;min-height:48px;cursor:pointer;">🧑 Teen</button>
+            <button class="age-select-btn" data-age="adult" onclick="changeAgeGroup('adult')" style="padding:0.75rem;border-radius:8px;border:2px solid var(--raised);background:var(--surface);color:var(--text);font-size:0.85rem;font-weight:600;transition:all 0.2s ease-out;min-height:48px;cursor:pointer;">🧑‍💼 Adult</button>
+          </div>
+        </div>
+
+        <!-- License key -->
+        <div class="card-surface">
+          <div style="font-weight:600;color:var(--text);margin-bottom:0.5rem;">🔑 Activate Pro</div>
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem;">Enter your Payhip/Gumroad key</div>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <input id="license-input" class="input-field" type="text" placeholder="Enter your license key..." oninput="onLicenseInput(this.value)" style="flex:1;" />
+            <span id="license-check" class="license-check">✅</span>
+          </div>
+        </div>
+
+        <!-- Reset -->
+        <div class="card-surface">
+          <div style="font-weight:600;color:var(--text);margin-bottom:0.5rem;">⚠️ Reset All Data</div>
+          <div style="font-size:0.85rem;color:var(--muted);margin-bottom:0.75rem;">Clears all wins, settings, and custom items</div>
+          <button class="btn-danger" onclick="resetAllData()">Reset Everything</button>
+        </div>
+
+        <!-- Version -->
+        <div style="text-align:center;color:var(--muted);font-size:0.8rem;padding:0.5rem;">
+          ADHD Dopamine Menu Tracker · v1.0.0
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Nav (mobile) -->
+  <nav id="bottom-nav">
+    <button class="bottom-nav-btn active" data-screen="home" onclick="navigate('home')">
+      <i data-lucide="home"></i>
+      <span>Home</span>
+    </button>
+    <button class="bottom-nav-btn" data-screen="build" onclick="navigate('build')">
+      <i data-lucide="edit-3"></i>
+      <span>Build</span>
+    </button>
+    <button class="bottom-nav-btn" data-screen="wins" onclick="navigate('wins')">
+      <i data-lucide="star"></i>
+      <span>Wins</span>
+    </button>
+    <button class="bottom-nav-btn" data-screen="history" onclick="navigate('history')">
+      <i data-lucide="calendar"></i>
+      <span>History</span>
+    </button>
+    <button class="bottom-nav-btn" data-screen="settings" onclick="navigate('settings')">
+      <i data-lucide="settings"></i>
+      <span>Settings</span>
+    </button>
+  </nav>
+
+</div>
+
+<!-- Day detail slide-up panel -->
+<div id="day-panel-backdrop" onclick="closeDayPanel()"></div>
+<div id="day-panel">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+    <div id="day-panel-title" style="font-weight:700;font-size:1.1rem;color:var(--text);"></div>
+    <button onclick="closeDayPanel()" style="background:none;border:none;color:var(--muted);font-size:1.5rem;min-height:auto;padding:0.25rem;cursor:pointer;">✕</button>
+  </div>
+  <div id="day-panel-content"></div>
+</div>
+
+<!-- Why-this popover overlay -->
+<div id="why-overlay" onclick="closeWhyPopover()"></div>
+<div id="why-popover" class="why-popover" style="display:none;">
+  <div class="why-popover-title" id="why-title"></div>
+  <div class="why-popover-body" id="why-body"></div>
+  <span class="why-popover-ref" id="why-ref"></span>
+</div>
+
+<!-- ── Energy Slider Modal ── -->
+<div id="energy-modal">
+  <div class="energy-modal-inner">
+    <div style="font-size:0.8rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.25rem;" id="energy-modal-phase">Before: How's your energy?</div>
+    <div style="font-size:1rem;font-weight:600;color:var(--text);margin-bottom:1.25rem;" id="energy-modal-item"></div>
+    <input type="range" class="energy-slider" id="energy-slider" min="1" max="5" value="3" />
+    <div class="energy-emoji-row">
+      <span title="Drained">😴</span>
+      <span title="Low">😕</span>
+      <span title="Okay">😐</span>
+      <span title="Good">🙂</span>
+      <span title="Energised">⚡</span>
+    </div>
+    <div style="text-align:center;margin-top:0.5rem;font-size:0.8rem;color:var(--muted);" id="energy-slider-label">Okay</div>
+    <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
+      <button class="btn-ghost" onclick="closeEnergyModal()" style="flex:1;">Skip</button>
+      <button class="btn-primary" onclick="submitEnergy()" style="flex:2;" id="energy-submit-btn">Log it</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Body Double Overlay ── -->
+<div id="body-double-overlay">
+  <div class="bd-companion" id="bd-companion">🧠</div>
+  <div class="bd-timer" id="bd-timer">10:00</div>
+  <div class="bd-task-name" id="bd-task-name">Focus time</div>
+  <div class="bd-message" id="bd-message">You're not alone. I'm right here with you. 💙</div>
+  <div class="bd-controls">
+    <button class="btn-ghost" onclick="stopBodyDouble()" style="min-width:120px;">End Session</button>
+    <button class="btn-primary" onclick="addBodyDoubleTime()" style="min-width:120px;">+5 min</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STORAGE KEYS
+// ═══════════════════════════════════════════════════════════════
+const SK = {
+  AGE:       'adhd_age_group',
+  MUSIC_ON:  'adhd_music_enabled',
+  MUSIC_PLY: 'adhd_music_playing',
+  ITEMS:     'adhd_menu_items',
+  CUSTOM:    'adhd_custom_items',
+  WINS:      'adhd_wins',
+  LICENSE:   'adhd_license_key',
+  FIRST:     'adhd_first_launch',
+  POINTS:    'adhd_points',
+  ENERGY:    'adhd_energy_log',
+  SUGGESTION:'adhd_daily_suggestion'
+};
+
+// ═══════════════════════════════════════════════════════════════
+// PRE-LOADED MENU ITEMS
+// ═══════════════════════════════════════════════════════════════
+const PRELOADED_ITEMS = [
+  // ── Appetizers (≤5 min quick starters) ──
+  { id:'ap-water',    name:'Drink a full glass of water',          emoji:'💧', category:'appetizer', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Hydration boosts dopamine', body:'Even mild dehydration reduces dopamine synthesis. A full glass of water is the fastest legal dopamine primer.', ref:'— Dopamine Menu concept, Jessica McCabe / How to ADHD' } },
+  { id:'ap-walk',     name:'Walk to another room and back',        emoji:'🚶', category:'appetizer', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Movement resets the ADHD brain', body:'Brief locomotion raises norepinephrine and dopamine, the same neurotransmitters targeted by ADHD medication.', ref:'— Ratey, J. "Spark: The Revolutionary New Science of Exercise and the Brain"' } },
+  { id:'ap-jacks',    name:'5 jumping jacks',                      emoji:'🤸', category:'appetizer', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Burst movement = instant dopamine', body:'Short aerobic bursts trigger immediate dopamine and norepinephrine release, improving focus for 20–30 minutes after.', ref:'— ADDitude Magazine, "Exercise and ADHD"' } },
+  { id:'ap-ice',      name:'Hold an ice cube for 30 seconds',      emoji:'🧊', category:'appetizer', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Cold activates the vagus nerve', body:'Cold tactile input activates the vagus nerve, rapidly downregulating the fight-or-flight response and restoring calm focus.', ref:'— DBT TIPP skill, Marsha Linehan; used in ADHD emotional regulation' } },
+  { id:'ap-breath',   name:'4-7-8 breathing (one cycle)',          emoji:'😮‍💨', category:'appetizer', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Slows the nervous system in 60 seconds', body:'Extended exhale activates the parasympathetic nervous system, reducing cortisol and creating space for dopamine to work.', ref:'— Dr. Andrew Weil, Harvard Medical School' } },
+  { id:'ap-hum',      name:'Hum your favorite song for 1 minute',  emoji:'🎵', category:'appetizer', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Humming stimulates the vagus nerve', body:'Humming creates vibration that directly stimulates the vagus nerve, promoting calm and releasing oxytocin alongside dopamine.', ref:'— Porges, S. "The Polyvagal Theory"' } },
+  { id:'ap-window',   name:'Look out a window for 2 minutes',      emoji:'🪟', category:'appetizer', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Nature views reduce mental fatigue', body:'Even brief exposure to natural scenes restores directed attention capacity — the exact resource depleted by ADHD task-switching.', ref:'— Kaplan, S. "Attention Restoration Theory", Univ. of Michigan' } },
+  { id:'ap-pet',      name:'Pet an animal if one is nearby',       emoji:'🐾', category:'appetizer', timeEstimate:'2 min',  ageTags:['child','teen'], enabled:true, isCustom:false, why:{ title:'Petting animals releases oxytocin', body:'Physical contact with animals raises oxytocin and serotonin while lowering cortisol — a triple nervous system reset in under 2 minutes.', ref:'— Beetz et al., Frontiers in Psychology, 2012' } },
+  { id:'ap-write',    name:'Write one sentence about how you feel', emoji:'✍️', category:'appetizer', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Labeling emotions calms the amygdala', body:'Putting feelings into words (affect labeling) reduces amygdala reactivity, helping the prefrontal cortex — weakened in ADHD — regain control.', ref:'— Lieberman et al., Psychological Science, 2007' } },
+  { id:'ap-lotion',   name:'Put on hand lotion slowly',            emoji:'🧴', category:'appetizer', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Slow tactile input grounds the nervous system', body:'Deliberate slow touch activates tactile receptors that signal safety to the brain, interrupting hyperarousal loops common in ADHD.', ref:'— Sensory Integration theory, A. Jean Ayres, OT' } },
+  { id:'ap-drink',    name:'Make a hot drink mindfully',           emoji:'☕', category:'appetizer', timeEstimate:'5 min',  ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Ritual + warmth = dopamine + calm', body:'Warm beverages raise body temperature slightly, promoting serotonin. The ritual itself creates a predictable dopamine cue that helps ADHD brains transition.', ref:'— McCabe, J. "How to ADHD" (book, 2024)' } },
+  { id:'ap-doodle',   name:'Doodle for 3 minutes — no rules',      emoji:'🎨', category:'appetizer', timeEstimate:'3 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Doodling improves focus and memory', body:'Research shows doodlers retain 29% more information than non-doodlers. It occupies the default mode network, preventing mind-wandering.', ref:'— Andrade, J. Applied Cognitive Psychology, 2010' } },
+  { id:'ap-box',      name:'Box breathing (4 counts each side)',   emoji:'🌬️', category:'appetizer', timeEstimate:'3 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Used by Navy SEALs to restore focus', body:'Box breathing (4-4-4-4) is a tactical breathing technique that balances the autonomic nervous system, reducing impulsivity and restoring executive function.', ref:'— US Navy SEAL training protocol; validated in ADHD by Zylowska et al.' } },
+  { id:'ap-shoulder', name:'Shoulder rolls x5 each direction',     emoji:'🙆', category:'appetizer', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Releases tension stored in the trapezius', body:'ADHD brains often hold chronic tension in the neck and shoulders. Shoulder rolls release this, reducing cortisol and improving blood flow to the prefrontal cortex.', ref:'— OT sensory diet recommendations, CHADD' } },
+  { id:'ap-eyes',     name:'20-20-20 eye rest',                    emoji:'👀', category:'appetizer', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Prevents eye strain that worsens ADHD symptoms', body:'Eye strain increases cognitive fatigue, which amplifies ADHD symptoms. Looking 20 feet away for 20 seconds every 20 minutes is the evidence-based standard.', ref:'— American Optometric Association; ADHD & screen fatigue research' } },
+  { id:'ap-stretch',  name:'Full body stretch — arms up, breathe', emoji:'🙋', category:'appetizer', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Stretching resets proprioceptive input', body:'Reaching overhead and breathing deeply provides proprioceptive feedback that helps ADHD brains re-orient to the body and reduce mental scatter.', ref:'— Sensory diet principles, Wilbarger & Wilbarger, OT' } },
+  { id:'ap-cold-face', name:'Splash cold water on your face',      emoji:'💦', category:'appetizer', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Triggers the dive reflex — instant calm', body:'Cold water on the face activates the mammalian dive reflex, slowing heart rate by up to 25% and rapidly reducing emotional dysregulation.', ref:'— DBT TIPP skill; validated for emotional dysregulation in ADHD' } },
+  { id:'ap-5senses',  name:'5-4-3-2-1 grounding (name 5 things you see)', emoji:'🔍', category:'appetizer', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Grounds you in the present moment', body:'The 5-4-3-2-1 technique interrupts rumination and anxiety by engaging all five senses, pulling attention back to the present — ideal for ADHD overwhelm.', ref:'— Mindfulness-Based Cognitive Therapy; Zylowska, "The Mindfulness Prescription for Adult ADHD"' } },
+  { id:'ap-sing',     name:'Sing one song out loud',               emoji:'🎤', category:'appetizer', timeEstimate:'3 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Singing boosts dopamine and mood', body:'Singing releases dopamine, endorphins, and oxytocin simultaneously. It also requires breath control that activates the parasympathetic nervous system.', ref:'— Grape et al., Annals of the New York Academy of Sciences, 2003' } },
+  { id:'ap-gratitude', name:'Name 3 things you\'re grateful for',  emoji:'🙏', category:'appetizer', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Gratitude activates the brain\'s reward circuit', body:'Gratitude practice activates the medial prefrontal cortex and releases dopamine. For ADHD brains, it creates a quick positive feedback loop.', ref:'— Emmons & McCullough, Journal of Personality and Social Psychology, 2003' } },
+  // ── Mains (5–15 min focused tasks) ──
+  { id:'mn-tasks',    name:'Write tomorrow\'s top 3 tasks',        emoji:'📋', category:'main', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Externalizes working memory', body:'ADHD working memory is unreliable. Writing 3 tasks offloads them from your brain to paper, reducing cognitive load and anxiety overnight.', ref:'— Barkley, R. "Taking Charge of Adult ADHD"' } },
+  { id:'mn-surface',  name:'Clear one small surface',              emoji:'🧹', category:'main', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Visual clutter worsens ADHD focus', body:'Physical clutter competes for attention in ADHD brains. Clearing one surface creates a visual anchor of calm and provides a quick dopamine win.', ref:'— McMains & Kastner, Journal of Neuroscience, 2011' } },
+  { id:'mn-email',    name:'Process 5 emails',                     emoji:'📧', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Small batches prevent email overwhelm', body:'Processing in small batches (5 emails) uses the ADHD brain\'s strength for novelty while preventing the paralysis of an overwhelming inbox.', ref:'— GTD method, David Allen; adapted for ADHD by Tivers, ADHD reWired' } },
+  { id:'mn-read',     name:'Read one article or chapter page',     emoji:'📚', category:'main', timeEstimate:'10 min', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Reading builds sustained attention', body:'Regular reading practice strengthens the prefrontal cortex\'s ability to sustain attention — the core deficit in ADHD. Even 10 minutes daily compounds significantly.', ref:'— Mangen et al., Reading and Writing, 2013' } },
+  { id:'mn-avoid',    name:'Do the one task you\'ve been avoiding', emoji:'🎯', category:'main', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Avoidance amplifies ADHD anxiety', body:'Task avoidance in ADHD is driven by dopamine deficiency, not laziness. Starting for just 5 minutes breaks the avoidance loop and triggers task-engagement dopamine.', ref:'— Barkley, R. "ADHD and the Nature of Self-Control"' } },
+  { id:'mn-folder',   name:'Organize your desktop or one folder',  emoji:'🗂️', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Organization reduces cognitive load', body:'A disorganized digital environment creates constant micro-decisions that drain executive function. One folder at a time is the ADHD-friendly approach.', ref:'— Brown, T. "Smart but Stuck" (ADHD executive function)' } },
+  { id:'mn-mc',       name:'One structured creative Minecraft session', emoji:'🎮', category:'main', timeEstimate:'15 min', ageTags:['child','teen'], enabled:true, isCustom:false, why:{ title:'Structured creative play builds executive function', body:'Goal-directed creative play in sandbox games exercises planning, working memory, and task initiation — all executive functions impaired in ADHD.', ref:'— Granic et al., American Psychologist, 2014' } },
+  { id:'mn-body',     name:'10-minute guided body scan',           emoji:'🧘', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Body scan reduces ADHD hyperarousal', body:'Mindfulness body scans reduce default mode network hyperactivity — the "mind-wandering" network that is overactive in ADHD — improving sustained attention.', ref:'— Zylowska et al., Journal of Attention Disorders, 2008' } },
+  { id:'mn-hiit',     name:'7-minute workout (HIIT)',              emoji:'💪', category:'main', timeEstimate:'7 min',  ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'HIIT is the most effective exercise for ADHD', body:'High-intensity interval training produces the largest acute increases in dopamine and norepinephrine of any exercise type, with effects lasting 1–2 hours.', ref:'— Pontifex et al., Journal of Pediatrics, 2013' } },
+  { id:'mn-music',    name:'Play an instrument for 10 minutes',    emoji:'🎹', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Music practice strengthens executive function', body:'Playing an instrument simultaneously exercises working memory, attention, and motor control — a full executive function workout that ADHD brains respond to strongly.', ref:'— Schlaug et al., Annals of the New York Academy of Sciences, 2005' } },
+  { id:'mn-plants',   name:'Water your plants',                    emoji:'🌿', category:'main', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Caring for living things boosts dopamine', body:'Nurturing behavior (caring for plants or pets) triggers the brain\'s caregiving reward circuit, releasing dopamine and oxytocin.', ref:'— Soga et al., Urban Forestry & Urban Greening, 2017' } },
+  { id:'mn-color',    name:'Color one page in a coloring book',    emoji:'🖍️', category:'main', timeEstimate:'10 min', ageTags:['child'],        enabled:true, isCustom:false, why:{ title:'Coloring activates the relaxation response', body:'Repetitive, structured creative activity like coloring activates the relaxation response, reducing amygdala activity and creating a calm focus state.', ref:'— Curry & Kasser, Art Therapy, 2005' } },
+  { id:'mn-bag',      name:'Clear out your bag/backpack',          emoji:'📦', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Reduces "where is it?" anxiety', body:'ADHD brains lose things constantly, creating chronic low-level anxiety. A clean bag eliminates this daily stressor and provides a satisfying completion dopamine hit.', ref:'— Barkley, R. "Taking Charge of Adult ADHD"' } },
+  { id:'mn-cal',      name:'Set up tomorrow\'s calendar blocks',   emoji:'🔔', category:'main', timeEstimate:'10 min', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Time-blocking compensates for ADHD time blindness', body:'ADHD involves "time blindness" — difficulty perceiving future time. Calendar blocking externalizes time, making it visible and reducing the anxiety of an unstructured day.', ref:'— Barkley, R. "ADHD and the Nature of Self-Control"' } },
+  { id:'mn-text',     name:'Text one friend something kind',       emoji:'💬', category:'main', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Prosocial behavior releases dopamine', body:'Sending a kind message activates the brain\'s reward circuit. For ADHD brains, the social feedback loop (waiting for a reply) also provides motivating novelty.', ref:'— Inagaki & Eisenberger, Psychological Science, 2012' } },
+  { id:'mn-finance',  name:'Review one financial account for 10 min', emoji:'💳', category:'main', timeEstimate:'10 min', ageTags:['adult'],        enabled:true, isCustom:false, why:{ title:'ADHD adults face higher financial risk', body:'ADHD is associated with impulsive spending and bill-forgetting. Regular 10-minute check-ins build the habit of financial awareness without overwhelm.', ref:'— Barkley et al., Journal of Attention Disorders, 2008' } },
+  { id:'mn-laundry',  name:'Put away one load of laundry',         emoji:'🧺', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Completion tasks provide reliable dopamine', body:'Finishing a concrete, visible task like laundry provides a clear "done" signal that ADHD brains crave. The physical movement also adds a sensory bonus.', ref:'— Dopamine Menu framework, ADDitude Magazine' } },
+  { id:'mn-snack',    name:'Prep a simple healthy snack',          emoji:'🍱', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Blood sugar stability supports ADHD focus', body:'ADHD brains are especially sensitive to blood sugar drops, which worsen inattention and irritability. Prepping a protein-rich snack stabilizes focus for hours.', ref:'— Bloch & Mulqueen, Child and Adolescent Psychiatric Clinics, 2014' } },
+  { id:'mn-journal',  name:'Journal for 10 minutes',               emoji:'📓', category:'main', timeEstimate:'10 min', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Journaling externalizes ADHD\'s racing thoughts', body:'Writing thoughts down reduces the cognitive load of holding them in working memory, freeing up mental bandwidth for focus and reducing anxiety.', ref:'— Pennebaker, J. "Opening Up: The Healing Power of Expressing Emotions"' } },
+  { id:'mn-youtube',  name:'Watch one educational YouTube video',  emoji:'🎬', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Novelty-based learning suits the ADHD brain', body:'ADHD brains are wired for novelty. Short educational videos deliver new information in a format that matches the ADHD attention profile — visual, varied, and time-limited.', ref:'— Volkow et al., JAMA Psychiatry, 2012' } },
+  { id:'mn-pomodoro', name:'One Pomodoro — 25 min focused work',   emoji:'🍅', category:'main', timeEstimate:'25 min', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Time-boxing is the #1 ADHD productivity technique', body:'The Pomodoro Technique (25 min work + 5 min break) creates artificial urgency that activates the ADHD brain\'s interest-based nervous system.', ref:'— Cirillo, F. "The Pomodoro Technique"; endorsed by ADHD coaches Tivers & McCabe' } },
+  { id:'mn-declutter', name:'Donate or toss 5 items',              emoji:'🗑️', category:'main', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Decluttering reduces decision fatigue', body:'Every object in your environment is a potential distraction for an ADHD brain. Removing 5 items reduces the visual noise that competes for attention.', ref:'— McMains & Kastner, Journal of Neuroscience, 2011' } },
+  { id:'mn-affirmation', name:'Write 3 ADHD strengths you have',   emoji:'⭐', category:'main', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Reframes ADHD as a strength profile', body:'ADHD brains have genuine strengths: hyperfocus, creativity, and resilience. Actively naming them counteracts the shame narrative and builds self-efficacy.', ref:'— Hallowell & Ratey, "ADHD 2.0"' } },
+  // ── Desserts (Rewards — use after wins) ──
+  { id:'ds-game',     name:'30 minutes of your favorite game',     emoji:'🎮', category:'dessert', timeEstimate:'30 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Guilt-free play is essential for ADHD brains', body:'ADHD brains need genuine reward to sustain motivation. Scheduled guilt-free gaming is a healthy dopamine reward that reinforces the win-reward cycle.', ref:'— McCabe, J. "How to ADHD" (book, 2024)' } },
+  { id:'ds-show',     name:'One episode of your comfort show',     emoji:'📺', category:'dessert', timeEstimate:'30 min', ageTags:['child','teen'], enabled:true, isCustom:false, why:{ title:'Familiar content reduces cognitive load', body:'Comfort shows require minimal cognitive effort, allowing the ADHD brain to rest while still receiving mild dopamine from narrative engagement.', ref:'— Dopamine Menu framework, ADDitude Magazine' } },
+  { id:'ds-bath',     name:'Long bath or shower with no time pressure', emoji:'🛁', category:'dessert', timeEstimate:'30 min', ageTags:['adult'],        enabled:true, isCustom:false, why:{ title:'Warm water activates the parasympathetic system', body:'Warm baths raise core body temperature, which then drops during cooling — mimicking the physiological process of sleep onset and deeply calming the nervous system.', ref:'— Haghayegh et al., Sleep Medicine Reviews, 2019' } },
+  { id:'ds-treat',    name:'Enjoy a treat mindfully (no screens)', emoji:'🍫', category:'dessert', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Mindful eating amplifies reward satisfaction', body:'Eating without screens forces full sensory attention on the food, amplifying the dopamine reward signal and reducing the urge to binge for more stimulation.', ref:'— Kristeller & Wolever, Journal of Health Psychology, 2011' } },
+  { id:'ds-album',    name:'Full album listen with headphones',    emoji:'🎵', category:'dessert', timeEstimate:'45 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Music is a natural dopamine delivery system', body:'Listening to music you love releases dopamine in the nucleus accumbens — the same reward center activated by food and social connection.', ref:'— Salimpoor et al., Nature Neuroscience, 2011' } },
+  { id:'ds-cuddle',   name:'Cuddle with your comfort item',        emoji:'🧸', category:'dessert', timeEstimate:'15 min', ageTags:['child','teen'], enabled:true, isCustom:false, why:{ title:'Deep pressure input calms the nervous system', body:'Holding a soft object provides deep pressure tactile input that activates the parasympathetic nervous system, reducing cortisol and promoting calm.', ref:'— Grandin, T. "Thinking in Pictures"; OT sensory integration research' } },
+  { id:'ds-walk',     name:'20-minute nature walk with no destination', emoji:'🌳', category:'dessert', timeEstimate:'20 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Nature walks restore directed attention', body:'20 minutes in nature significantly restores directed attention capacity — the resource most depleted by ADHD. No destination means no task pressure.', ref:'— Berman et al., Psychological Science, 2008' } },
+  { id:'ds-fiction',  name:'Read fiction for pure pleasure',       emoji:'📖', category:'dessert', timeEstimate:'30 min', ageTags:['adult'],        enabled:true, isCustom:false, why:{ title:'Fiction builds empathy and reduces stress', body:'Reading fiction activates the default mode network in a healthy, structured way — providing the narrative stimulation ADHD brains crave without the dopamine crash of screens.', ref:'— Mar et al., Journal of Research in Personality, 2006' } },
+  { id:'ds-create',   name:'Free creative time — anything goes',   emoji:'🎨', category:'dessert', timeEstimate:'30 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Unstructured creativity is ADHD\'s superpower', body:'ADHD brains excel at divergent thinking. Unstructured creative time with no goal or judgment allows hyperfocus to emerge naturally and joyfully.', ref:'— White & Shah, Personality and Individual Differences, 2011' } },
+  { id:'ds-nap',      name:'Guilt-free nap (set a timer)',         emoji:'😴', category:'dessert', timeEstimate:'20 min', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'ADHD brains are chronically sleep-deprived', body:'ADHD is strongly associated with delayed sleep phase and poor sleep quality. A 20-minute nap restores dopamine receptor sensitivity and executive function.', ref:'— Yoon et al., Journal of Attention Disorders, 2012' } },
+  { id:'ds-call',     name:'Call someone you love just to chat',   emoji:'📞', category:'dessert', timeEstimate:'20 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Social connection is a primary dopamine source', body:'Positive social interaction releases dopamine, oxytocin, and serotonin simultaneously. For ADHD brains, the novelty of conversation also provides natural stimulation.', ref:'— Inagaki & Eisenberger, Psychological Science, 2012' } },
+  { id:'ds-play',     name:'Free play time — no structure needed', emoji:'🎪', category:'dessert', timeEstimate:'30 min', ageTags:['child'],        enabled:true, isCustom:false, why:{ title:'Unstructured play is essential for ADHD development', body:'Free play builds self-regulation, creativity, and social skills in children with ADHD. It also provides the novelty and movement their nervous systems require.', ref:'— Barkley, R. "Taking Charge of ADHD" (children\'s edition)' } },
+  { id:'ds-puzzle',   name:'Work on a puzzle or LEGO set',         emoji:'🧩', category:'dessert', timeEstimate:'30 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Puzzles provide structured hyperfocus', body:'Puzzles and LEGO provide a clear goal, tactile feedback, and visible progress — three elements that reliably trigger ADHD hyperfocus in a healthy, rewarding way.', ref:'— Dopamine Menu framework; ADHD hyperfocus research, Hupfeld et al.' } },
+  { id:'ds-dance',    name:'Dance to 2 songs — no one\'s watching', emoji:'💃', category:'dessert', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Dance combines movement, music, and joy', body:'Dancing simultaneously delivers aerobic dopamine boost, musical reward, and proprioceptive input — making it one of the most efficient ADHD reward activities.', ref:'— Hackney et al., Journal of Aging and Physical Activity, 2007' } },
+  { id:'ds-craft',    name:'Work on a craft or DIY project',       emoji:'🧶', category:'dessert', timeEstimate:'30 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Making things activates the reward circuit', body:'Completing a physical creation triggers a dopamine release tied to the "making" instinct. Repetitive crafts like knitting also have a meditative, calming effect.', ref:'— Riley et al., British Journal of Occupational Therapy, 2013' } },
+  { id:'ds-comedy',   name:'Watch a comedy clip that makes you laugh', emoji:'😂', category:'dessert', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Laughter is a natural dopamine and endorphin release', body:'Genuine laughter releases endorphins and dopamine, reduces cortisol, and temporarily improves mood and cognitive flexibility — all impaired in ADHD.', ref:'— Dunbar et al., Proceedings of the Royal Society B, 2012' } },
+  // ── Sensory Resets (Quick nervous system resets) ──
+  { id:'sn-wrists',   name:'Cold water on wrists for 30 seconds',  emoji:'🧊', category:'sensory', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Pulse points cool the body and calm the brain', body:'The wrists have major blood vessels close to the skin. Cold water here rapidly lowers core temperature and activates the vagus nerve, reducing emotional dysregulation.', ref:'— DBT TIPP skill; validated for ADHD emotional regulation' } },
+  { id:'sn-headphones',name:'Noise-cancelling headphones, eyes closed', emoji:'🎧', category:'sensory', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Reduces sensory overload instantly', body:'ADHD brains are often hypersensitive to auditory input. Noise-cancelling headphones remove competing stimuli, allowing the nervous system to downregulate rapidly.', ref:'— Sensory processing and ADHD, Dunn, W. "The Sensory Profile"' } },
+  { id:'sn-stim',     name:'Stim toy / fidget for 3 minutes',      emoji:'🌀', category:'sensory', timeEstimate:'3 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Fidgeting improves ADHD focus by 10–20%', body:'Controlled fidgeting provides proprioceptive input that occupies the motor cortex, freeing the prefrontal cortex for cognitive tasks. Research shows it improves working memory.', ref:'— Hartanto et al., Child Neuropsychology, 2016' } },
+  { id:'sn-bounce',   name:'Bounce a ball 20 times',               emoji:'🏀', category:'sensory', timeEstimate:'2 min',  ageTags:['child','teen'], enabled:true, isCustom:false, why:{ title:'Rhythmic movement regulates the nervous system', body:'Repetitive rhythmic movement (bouncing, rocking) activates the vestibular system, which has a direct calming effect on the brainstem and reduces hyperarousal.', ref:'— Ayres, A.J. "Sensory Integration and the Child"' } },
+  { id:'sn-pmr',      name:'Progressive muscle relaxation (x5)',   emoji:'🤲', category:'sensory', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'PMR reduces ADHD anxiety and physical tension', body:'Progressive muscle relaxation (tense-and-release) is one of the most evidence-based techniques for reducing anxiety in ADHD, with effects measurable after a single session.', ref:'— Jacobson, E. (1938); validated for ADHD by multiple RCTs' } },
+  { id:'sn-smell',    name:'Smell something you love',             emoji:'🌸', category:'sensory', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Olfaction bypasses the thalamus to reach the brain directly', body:'Smell is the only sense with a direct pathway to the limbic system (emotion center). A familiar pleasant scent can shift mood and arousal state within seconds.', ref:'— Herz, R. "The Scent of Desire"; olfactory neuroscience research' } },
+  { id:'sn-crunch',   name:'Eat something crunchy mindfully',      emoji:'🧁', category:'sensory', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Oral motor input provides proprioceptive calming', body:'Chewing and crunching provide intense proprioceptive input through the jaw, which has a well-documented calming effect on the nervous system — used in OT sensory diets.', ref:'— Wilbarger, P. "Sensory Diet"; OT sensory integration research' } },
+  { id:'sn-barefoot', name:'Walk barefoot on grass or carpet',     emoji:'👣', category:'sensory', timeEstimate:'3 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Barefoot walking provides grounding tactile input', body:'The soles of the feet have dense tactile receptors. Walking barefoot on varied textures provides rich proprioceptive and tactile input that grounds the nervous system.', ref:'— Chevalier et al., Journal of Environmental and Public Health, 2012' } },
+  { id:'sn-bubbles',  name:'Blow bubbles for 2 minutes',           emoji:'🫧', category:'sensory', timeEstimate:'2 min',  ageTags:['child'],        enabled:true, isCustom:false, why:{ title:'Blowing activates the parasympathetic system', body:'Blowing bubbles requires slow, controlled exhalation — the same mechanism as diaphragmatic breathing. It\'s a playful way to activate the relaxation response in children.', ref:'— OT sensory diet for children; CHADD pediatric recommendations' } },
+  { id:'sn-binaural', name:'Put on binaural beats for 5 minutes',  emoji:'🎶', category:'sensory', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Binaural beats may improve ADHD focus', body:'Binaural beats in the beta range (15–20 Hz) have shown promise in small studies for improving attention in ADHD by entraining brainwave activity.', ref:'— Kennel et al., Alternative Therapies in Health and Medicine, 2010' } },
+  { id:'sn-dark',     name:'Sit in a quiet dark room for 3 minutes', emoji:'🪑', category:'sensory', timeEstimate:'3 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Sensory deprivation resets an overstimulated brain', body:'Brief time in a low-stimulation environment allows the ADHD brain\'s overloaded sensory processing system to reset, reducing cortisol and restoring baseline calm.', ref:'— Sensory overload and ADHD, Dunn, W. "The Sensory Profile"' } },
+  { id:'sn-cold',     name:'Cold shower blast for 30 seconds',     emoji:'🚿', category:'sensory', timeEstimate:'1 min',  ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Cold exposure boosts dopamine by up to 250%', body:'Cold water immersion triggers a massive norepinephrine and dopamine release. A 30-second cold blast at the end of a shower provides a sustained dopamine elevation lasting hours.', ref:'— Shevchuk, N. Medical Hypotheses, 2008; Huberman Lab research' } },
+  { id:'sn-hug',      name:'Ask for or give a hug',                emoji:'🤗', category:'sensory', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'A 20-second hug releases oxytocin', body:'Physical embrace for 20+ seconds triggers oxytocin release, reducing cortisol and creating a sense of safety and connection — powerful for ADHD emotional regulation.', ref:'— Light et al., Psychosomatic Medicine, 2005' } },
+  { id:'sn-weighted', name:'Use a weighted blanket for 5 minutes', emoji:'🛏️', category:'sensory', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Deep pressure input calms the nervous system', body:'Weighted blankets provide deep pressure stimulation that activates the parasympathetic nervous system, reducing anxiety and hyperarousal in ADHD.', ref:'— Mullen et al., American Journal of Occupational Therapy, 2008' } },
+  { id:'sn-swing',    name:'Swing or rock in a chair for 3 min',   emoji:'🪑', category:'sensory', timeEstimate:'3 min',  ageTags:['child','teen'], enabled:true, isCustom:false, why:{ title:'Vestibular input is calming and organizing', body:'Rhythmic vestibular input (swinging, rocking) is one of the most powerful sensory regulators for ADHD brains, directly calming the brainstem\'s arousal system.', ref:'— Ayres, A.J. "Sensory Integration and the Child"; OT research' } },
+  { id:'sn-pushwall', name:'Wall push-ups x10 (slow and firm)',     emoji:'🧱', category:'sensory', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Proprioceptive input organizes the nervous system', body:'Pushing against resistance provides heavy proprioceptive input to joints and muscles, which has a well-documented organizing and calming effect on the ADHD nervous system.', ref:'— Wilbarger & Wilbarger, "Sensory Defensiveness"; OT sensory diet research' } },
+  { id:'sn-tap',      name:'EFT tapping — tap 8 points x3 rounds', emoji:'👆', category:'sensory', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Tapping reduces cortisol and anxiety rapidly', body:'Emotional Freedom Technique (EFT tapping) on acupressure points has been shown to reduce cortisol by 24% in a single session, with strong effects on anxiety and emotional dysregulation.', ref:'— Church et al., Journal of Nervous and Mental Disease, 2012' } },
+
+  // ── Sides (Background boosters — do while doing other things) ──
+  { id:'sd-whitenoise', name:'Put on white noise or brown noise',  emoji:'🌊', category:'sides', timeEstimate:'ongoing', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Background noise masks distracting sounds', body:'White and brown noise mask unpredictable environmental sounds that hijack ADHD attention. Brown noise in particular has shown benefits for ADHD focus in multiple studies.', ref:'— Söderlund et al., Journal of Child Psychology and Psychiatry, 2010' } },
+  { id:'sd-lofi',     name:'Play lo-fi music while working',       emoji:'🎵', category:'sides', timeEstimate:'ongoing', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Lo-fi music provides optimal background stimulation', body:'Lo-fi music provides consistent, low-complexity auditory stimulation that satisfies the ADHD brain\'s need for input without competing with cognitive tasks.', ref:'— Ravi et al., Applied Neuropsychology, 2021; ADDitude Magazine' } },
+  { id:'sd-stand',    name:'Switch to standing while working',     emoji:'🧍', category:'sides', timeEstimate:'ongoing', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Standing increases alertness and dopamine', body:'Standing desks increase physical arousal and alertness. The subtle postural engagement provides proprioceptive input that helps ADHD brains maintain focus.', ref:'— Mehta et al., International Journal of Environmental Research, 2016' } },
+  { id:'sd-chew',     name:'Chew gum while working',               emoji:'🍬', category:'sides', timeEstimate:'ongoing', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Chewing gum improves ADHD attention', body:'Chewing provides continuous oral motor proprioceptive input that occupies the motor cortex, reducing restlessness and improving sustained attention in ADHD.', ref:'— Hirano et al., Brain and Cognition, 2013' } },
+  { id:'sd-candle',   name:'Light a scented candle nearby',        emoji:'🕯️', category:'sides', timeEstimate:'ongoing', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Scent creates a focus-associated environment', body:'Pairing a specific scent with focused work creates a conditioned stimulus — over time, that scent alone triggers a focus state. Rosemary and peppermint have direct evidence for cognitive enhancement.', ref:'— Moss et al., International Journal of Neuroscience, 2008' } },
+  { id:'sd-timer',    name:'Set a visible countdown timer',        emoji:'⏱️', category:'sides', timeEstimate:'ongoing', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Visual timers compensate for ADHD time blindness', body:'ADHD involves impaired time perception. A visible countdown timer externalizes time, making it concrete and reducing the anxiety of not knowing how long something will take.', ref:'— Barkley, R. "ADHD and the Nature of Self-Control"' } },
+  { id:'sd-body-double', name:'Body double — work alongside someone', emoji:'👥', category:'sides', timeEstimate:'ongoing', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Body doubling is one of the most effective ADHD hacks', body:'Working alongside another person (in person or virtually) activates the social monitoring system, which provides the external accountability ADHD brains need to initiate and sustain tasks.', ref:'— Psychology Today, "Body Doubling for ADHD", 2024; ADHD reWired' } },
+  { id:'sd-reward',   name:'Set a micro-reward for finishing a task', emoji:'🎁', category:'sides', timeEstimate:'ongoing', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Immediate rewards activate the ADHD reward circuit', body:'ADHD brains are insensitive to delayed rewards. Setting a small immediate reward (a snack, a song, 5 min of a game) bridges the gap between effort and dopamine.', ref:'— Barkley, R. "Taking Charge of Adult ADHD"' } },
+  { id:'sd-playlist', name:'Create a "focus playlist" for this session', emoji:'🎧', category:'sides', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Music with lyrics you know reduces mind-wandering', body:'Familiar music occupies the verbal processing area of the brain, preventing it from generating distracting internal monologue — a major ADHD focus disruptor.', ref:'— McCabe, J. "How to ADHD"; ADDitude Magazine' } },
+  { id:'sd-temptation', name:'Temptation bundle — pair a chore with a podcast', emoji:'🎙️', category:'sides', timeEstimate:'ongoing', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Temptation bundling makes boring tasks dopamine-positive', body:'Pairing a disliked task with something enjoyable (podcast, audiobook) creates a positive dopamine association with the task, reducing avoidance over time.', ref:'— Milkman et al., Journal of Marketing Research, 2014' } },
+  { id:'sd-window',   name:'Work near a window with natural light',  emoji:'☀️', category:'sides', timeEstimate:'ongoing', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Natural light regulates dopamine and circadian rhythm', body:'Natural light exposure increases dopamine synthesis and regulates the circadian rhythm, which is frequently disrupted in ADHD. It also reduces eye strain and fatigue.', ref:'— Lewy et al., Proceedings of the National Academy of Sciences, 1980' } },
+
+  // ── Movement (Dedicated movement breaks and exercise) ──
+  { id:'mv-yoga',     name:'5-minute chair yoga',                  emoji:'🧘', category:'movement', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Yoga reduces ADHD symptoms with strong evidence', body:'A systematic review of 16 studies found yoga significantly reduces ADHD symptoms including inattention, hyperactivity, and anxiety, with effects comparable to behavioral therapy.', ref:'— Chimiklis et al., Journal of Attention Disorders, 2018; NIH systematic review' } },
+  { id:'mv-run',      name:'10-minute run or brisk walk outside',  emoji:'🏃', category:'movement', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Aerobic exercise is the most evidence-based ADHD intervention', body:'A single bout of aerobic exercise improves attention, working memory, and inhibitory control in ADHD for up to 2 hours — equivalent to a dose of stimulant medication.', ref:'— Pontifex et al., Journal of Pediatrics, 2013; Ratey, J. "Spark"' } },
+  { id:'mv-dance',    name:'Dance break — 2 songs, full energy',   emoji:'🕺', category:'movement', timeEstimate:'8 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Dance is aerobic exercise plus dopamine reward', body:'Dancing combines aerobic dopamine boost with musical reward and social/expressive elements, making it one of the most enjoyable and effective ADHD movement interventions.', ref:'— Hackney et al., Journal of Aging and Physical Activity, 2007' } },
+  { id:'mv-pushups',  name:'10 push-ups (or wall push-ups)',        emoji:'💪', category:'movement', timeEstimate:'2 min',  ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Resistance exercise boosts norepinephrine', body:'Resistance exercise raises norepinephrine — the neurotransmitter most directly linked to ADHD attention — with effects lasting 30–60 minutes after exercise.', ref:'— Wigal et al., Journal of Attention Disorders, 2003' } },
+  { id:'mv-trampoline', name:'Bounce on a trampoline for 5 min',   emoji:'🤸', category:'movement', timeEstimate:'5 min',  ageTags:['child','teen'], enabled:true, isCustom:false, why:{ title:'Rebounding provides vestibular and proprioceptive input', body:'Trampoline bouncing provides intense vestibular and proprioceptive input that is highly regulating for ADHD nervous systems, often used in OT sensory diets.', ref:'— Ayres, A.J. "Sensory Integration and the Child"; OT research' } },
+  { id:'mv-stairs',   name:'Walk up and down stairs 3 times',      emoji:'🪜', category:'movement', timeEstimate:'3 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Stair climbing is a high-intensity micro-exercise', body:'Stair climbing rapidly elevates heart rate, triggering dopamine and norepinephrine release. Three flights is enough to produce measurable cognitive benefits.', ref:'— Mekari et al., Physiology & Behavior, 2015' } },
+  { id:'mv-stretch',  name:'Full 5-minute stretching routine',     emoji:'🙆', category:'movement', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Stretching improves blood flow to the prefrontal cortex', body:'Stretching increases circulation and provides proprioceptive input that helps ADHD brains re-orient to the body, reducing mental scatter and improving focus.', ref:'— OT sensory diet principles; Ratey, J. "Spark"' } },
+  { id:'mv-bike',     name:'10-minute bike ride or stationary bike', emoji:'🚴', category:'movement', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Cycling improves ADHD executive function', body:'Cycling combines aerobic exercise with bilateral coordination, which activates both brain hemispheres and has been shown to improve executive function in ADHD.', ref:'— Gapin & Etnier, Journal of Sport and Exercise Psychology, 2010' } },
+  { id:'mv-swim',     name:'Swim laps or splash in water',         emoji:'🏊', category:'movement', timeEstimate:'15 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Swimming combines aerobic and sensory benefits', body:'Swimming provides aerobic dopamine boost plus full-body proprioceptive and tactile input from water pressure — a uniquely comprehensive ADHD regulation activity.', ref:'— Pan et al., Research in Developmental Disabilities, 2016' } },
+  { id:'mv-martial',  name:'Practice martial arts moves or kata',  emoji:'🥋', category:'movement', timeEstimate:'10 min', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Martial arts improve ADHD attention and self-control', body:'Multiple RCTs show martial arts training significantly improves attention, impulse control, and self-regulation in ADHD — combining aerobic exercise with mindful movement.', ref:'— Haydicky et al., Journal of Attention Disorders, 2015' } },
+  { id:'mv-walk-mindful', name:'Mindful walking — notice every step', emoji:'🚶', category:'movement', timeEstimate:'10 min', ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Walking meditation suits ADHD better than seated meditation', body:'Movement-based mindfulness is more effective for ADHD than seated meditation. Focusing on each step provides a concrete anchor for attention that prevents mind-wandering.', ref:'— Zylowska, L. "The Mindfulness Prescription for Adult ADHD"' } },
+
+  // ── Social (Connection and co-regulation activities) ──
+  { id:'so-checkin',  name:'Send a "thinking of you" message',     emoji:'💌', category:'social', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Prosocial acts release dopamine and oxytocin', body:'Sending a kind message activates the brain\'s reward circuit. The anticipation of a reply also provides the novelty-seeking stimulation ADHD brains crave.', ref:'— Inagaki & Eisenberger, Psychological Science, 2012' } },
+  { id:'so-compliment', name:'Give someone a genuine compliment',  emoji:'🌟', category:'social', timeEstimate:'1 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Giving compliments activates the reward circuit', body:'Giving a compliment activates the same reward areas as receiving one. It also creates a positive social interaction that provides the connection ADHD brains need for regulation.', ref:'— Izuma et al., Neuron, 2008' } },
+  { id:'so-virtual',  name:'Join a virtual co-working session',    emoji:'💻', category:'social', timeEstimate:'25 min', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Virtual body doubling is as effective as in-person', body:'Research shows virtual co-working (body doubling) is as effective as in-person for ADHD task initiation and completion, with the added benefit of being available anytime.', ref:'— Psychology Today, "Body Doubling for ADHD", 2024' } },
+  { id:'so-share',    name:'Share one win with someone today',     emoji:'🏆', category:'social', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Social validation amplifies dopamine reward', body:'Sharing an accomplishment with someone who responds positively amplifies the dopamine reward of the win, reinforcing the behavior and building motivation for future tasks.', ref:'— Dopamine Menu framework; social reward neuroscience' } },
+  { id:'so-ask',      name:'Ask someone how their day is going',   emoji:'🤝', category:'social', timeEstimate:'5 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Social curiosity reduces ADHD isolation', body:'ADHD is associated with social difficulties and isolation. Practicing genuine curiosity about others builds social connection and provides the novelty-seeking stimulation ADHD brains need.', ref:'— Hallowell & Ratey, "ADHD 2.0"' } },
+  { id:'so-group',    name:'Join an ADHD support community online', emoji:'🧠', category:'social', timeEstimate:'10 min', ageTags:['teen','adult'], enabled:true, isCustom:false, why:{ title:'Peer support reduces ADHD shame and isolation', body:'ADHD support communities provide validation, practical strategies, and the experience of being understood — all of which reduce the shame and isolation that worsen ADHD symptoms.', ref:'— CHADD (Children and Adults with ADHD); ADDitude Magazine' } },
+  { id:'so-laugh',    name:'Share a funny meme with a friend',     emoji:'😄', category:'social', timeEstimate:'2 min',  ageTags:['all'],          enabled:true, isCustom:false, why:{ title:'Shared laughter is a social bonding superpower', body:'Shared humor releases endorphins and oxytocin, strengthening social bonds. For ADHD brains, humor is also a natural coping mechanism that reframes challenges.', ref:'— Dunbar et al., Proceedings of the Royal Society B, 2012' } },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// PURE FUNCTIONS (testable, no side effects)
+// ═══════════════════════════════════════════════════════════════
+
+/** Property 1: Age filter correctness */
+function filterByAge(items, ageGroup) {
+  return items.filter(item => {
+    const tags = item.ageTags;
+    if (tags.includes('all')) return true;
+    if (ageGroup === 'child' && (tags.includes('child') || tags.includes('child'))) return true;
+    if (ageGroup === 'teen'  && (tags.includes('teen')  || tags.includes('teen')))  return true;
+    if (ageGroup === 'adult' && (tags.includes('adult') || tags.includes('adult'))) return true;
+    // Handle compound tags like ['child','teen'] or ['teen','adult']
+    return tags.includes(ageGroup);
+  });
+}
+
+/** Property 4: Search filter correctness */
+function filterBySearch(items, query) {
+  if (!query || !query.trim()) return items;
+  const q = query.toLowerCase().trim();
+  return items.filter(item => item.name.toLowerCase().includes(q));
+}
+
+/** Property 7: Win count message correctness */
+function getWinMessage(count) {
+  if (count === 0) return "No wins yet — that's okay. Even opening this app counts. 💙";
+  if (count <= 3)  return count === 1
+    ? "One win! That's a real start. Your brain is working with you. 🌱"
+    : `${count} wins! You're building momentum. Be proud of that. ✨`;
+  return `${count} wins today! You're absolutely on fire. Your future self thanks you. 🎉`;
+}
+
+/** Property 3: Streak monotonicity */
+function calculateStreak(wins) {
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toLocaleDateString('en-CA');
+    if (wins[key] && wins[key].length > 0) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+  return streak;
+}
+
+/** Property 8: Heat map intensity correctness */
+function getHeatOpacity(winCount) {
+  if (winCount === 0) return 0;
+  if (winCount === 1) return 0.2;
+  if (winCount === 2) return 0.4;
+  if (winCount === 3) return 0.6;
+  return 0.8;
+}
+
+/** Property 9: License key validation */
+function isValidLicenseKey(key) {
+  return typeof key === 'string' && key.trim().length > 0;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STATE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════
+
+let state = {
+  ageGroup: null,
+  musicEnabled: true,
+  menuItems: [],
+  customItems: [],
+  wins: {},
+  licenseKey: '',
+  currentScreen: 'home',
+  activeCategory: 'appetizer',
+  searchQuery: '',
+  points: 0,
+  energyLog: {},        // { 'YYYY-MM-DD': [{ itemId, before, after, timestamp }] }
+  dailySuggestion: null // { date: 'YYYY-MM-DD', itemId: '...' }
+};
+
+function loadState() {
+  try { state.ageGroup     = localStorage.getItem(SK.AGE) || null; } catch(e) {}
+  try { state.musicEnabled = JSON.parse(localStorage.getItem(SK.MUSIC_ON) ?? 'true'); } catch(e) { state.musicEnabled = true; }
+  try { state.menuItems    = JSON.parse(localStorage.getItem(SK.ITEMS)  || 'null') || []; } catch(e) { state.menuItems = []; }
+  try { state.customItems  = JSON.parse(localStorage.getItem(SK.CUSTOM) || '[]'); } catch(e) { state.customItems = []; }
+  try { state.wins         = JSON.parse(localStorage.getItem(SK.WINS)   || '{}'); } catch(e) { state.wins = {}; }
+  try { state.licenseKey   = localStorage.getItem(SK.LICENSE) || ''; } catch(e) { state.licenseKey = ''; }
+  try { state.points       = parseInt(localStorage.getItem(SK.POINTS) || '0', 10) || 0; } catch(e) { state.points = 0; }
+  try { state.energyLog    = JSON.parse(localStorage.getItem(SK.ENERGY) || '{}'); } catch(e) { state.energyLog = {}; }
+  try { state.dailySuggestion = JSON.parse(localStorage.getItem(SK.SUGGESTION) || 'null'); } catch(e) { state.dailySuggestion = null; }
+
+  // Merge any new PRELOADED_ITEMS not yet in saved menuItems (handles app updates)
+  if (state.menuItems.length > 0 && state.ageGroup) {
+    const savedIds = new Set(state.menuItems.map(i => i.id));
+    const ageFiltered = filterByAge(PRELOADED_ITEMS, state.ageGroup);
+    const newItems = ageFiltered.filter(i => !savedIds.has(i.id));
+    if (newItems.length > 0) {
+      state.menuItems = [...state.menuItems, ...newItems];
+      save(SK.ITEMS, state.menuItems);
+    }
+  }
+
+  // Backfill 'why' field from PRELOADED_ITEMS for items loaded from old localStorage
+  const whyMap = {};
+  PRELOADED_ITEMS.forEach(i => { if (i.why) whyMap[i.id] = i.why; });
+  state.menuItems = state.menuItems.map(item =>
+    (!item.why && whyMap[item.id]) ? { ...item, why: whyMap[item.id] } : item
+  );
+}
+
+function save(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) { console.warn('localStorage write failed:', e); }
+}
+
+function saveRaw(key, value) {
+  try { localStorage.setItem(key, value); } catch(e) { console.warn('localStorage write failed:', e); }
+}
+
+function todayKey() {
+  return new Date().toLocaleDateString('en-CA');
+}
+
+function getTodayWins() {
+  return state.wins[todayKey()] || [];
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MUSIC CONTROLLER
+// ═══════════════════════════════════════════════════════════════
+
+const AUDIO = {
+  child: document.getElementById('audio-child'),
+  teen:  document.getElementById('audio-teen'),
+  adult: document.getElementById('audio-adult')
+};
+
+const VOLUMES = { child: 0.4, teen: 0.45, adult: 0.5 };
+
+// Silence errors for missing files
+Object.values(AUDIO).forEach(el => {
+  el.onerror = (e) => { e.preventDefault(); return false; };
+});
+
+let currentAgeTrack = null;
+let fadeInterval = null;
+
+function fadeOut(audioEl, duration, callback) {
+  if (!audioEl) { if (callback) callback(); return; }
+  clearInterval(fadeInterval);
+  const steps = 20;
+  const stepTime = duration / steps;
+  const startVol = audioEl.volume;
+  let step = 0;
+  fadeInterval = setInterval(() => {
+    step++;
+    audioEl.volume = Math.max(0, startVol * (1 - step / steps));
+    if (step >= steps) {
+      clearInterval(fadeInterval);
+      audioEl.pause();
+      audioEl.volume = startVol;
+      if (callback) callback();
+    }
+  }, stepTime);
+}
+
+function fadeIn(audioEl, targetVolume, duration) {
+  if (!audioEl) return;
+  clearInterval(fadeInterval);
+  audioEl.volume = 0;
+  const playPromise = audioEl.play();
+  if (playPromise) playPromise.catch(() => {});
+  const steps = 20;
+  const stepTime = duration / steps;
+  let step = 0;
+  fadeInterval = setInterval(() => {
+    step++;
+    audioEl.volume = Math.min(targetVolume, targetVolume * (step / steps));
+    if (step >= steps) {
+      clearInterval(fadeInterval);
+      audioEl.volume = targetVolume;
+    }
+  }, stepTime);
+}
+
+function playTrack(ageGroup) {
+  if (!state.musicEnabled) return;
+  const el = AUDIO[ageGroup];
+  if (!el) return;
+  el.volume = VOLUMES[ageGroup] || 0.5;
+  const p = el.play();
+  if (p) p.catch(() => {});
+  currentAgeTrack = ageGroup;
+  save(SK.MUSIC_PLY, true);
+}
+
+function stopAllTracks() {
+  Object.values(AUDIO).forEach(el => { try { el.pause(); el.currentTime = 0; } catch(e) {} });
+}
+
+function switchTrack(newAgeGroup) {
+  const oldEl = currentAgeTrack ? AUDIO[currentAgeTrack] : null;
+  fadeOut(oldEl, 300, () => {
+    currentAgeTrack = newAgeGroup;
+    if (state.musicEnabled) {
+      fadeIn(AUDIO[newAgeGroup], VOLUMES[newAgeGroup] || 0.5, 300);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════════════════════════
+
+function fireConfetti() {
+  if (typeof confetti === 'undefined') return;
+  confetti({
+    particleCount: 80,
+    spread: 70,
+    origin: { y: 0.7 },
+    colors: ['#00b4a6', '#22c55e', '#f59e0b', '#818cf8']
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════
+
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAVIGATION / ROUTER
+// ═══════════════════════════════════════════════════════════════
+
+function navigate(screen) {
+  state.currentScreen = screen;
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+
+  // Update nav buttons
+  document.querySelectorAll('.nav-btn, .bottom-nav-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.screen === screen);
+  });
+
+  // Update top bar
+  const titles = { home: 'My Menu', build: 'Build Menu', wins: "Today's Wins", history: 'History', settings: 'Settings' };
+  const titleEl = document.getElementById('top-bar-title');
+  const actionsEl = document.getElementById('top-bar-actions');
+  if (titleEl) titleEl.textContent = titles[screen] || 'Dopamine Menu';
+  if (actionsEl) {
+    if (screen === 'wins') {
+      actionsEl.innerHTML = `<button class="top-bar-action" onclick="exportPDF()"><i data-lucide="download" style="width:16px;height:16px;"></i> PDF</button>`;
+    } else if (screen === 'home') {
+      actionsEl.innerHTML = `<button class="top-bar-action" onclick="openBodyDouble()"><i data-lucide="users" style="width:16px;height:16px;"></i></button>`;
+    } else {
+      actionsEl.innerHTML = '';
+    }
+  }
+
+  // Render screen content
+  if (screen === 'home')     renderHome();
+  if (screen === 'build')    renderBuild();
+  if (screen === 'wins')     renderWins();
+  if (screen === 'history')  renderHistory();
+  if (screen === 'settings') renderSettings();
+
+  // Re-init lucide icons
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WELCOME MODAL
+// ═══════════════════════════════════════════════════════════════
+
+function selectAgeGroup(ageGroup) {
+  state.ageGroup = ageGroup;
+  saveRaw(SK.AGE, ageGroup);
+  saveRaw(SK.FIRST, 'false');
+
+  // Pre-load age-appropriate items
+  const filtered = filterByAge(PRELOADED_ITEMS, ageGroup).map(item => ({ ...item, enabled: true }));
+  state.menuItems = filtered;
+  save(SK.ITEMS, filtered);
+
+  // Dismiss modal
+  const modal = document.getElementById('welcome-modal');
+  modal.style.animation = 'fadeOut 0.3s ease-out forwards';
+  setTimeout(() => {
+    modal.style.display = 'none';
+    document.getElementById('app-shell').style.display = 'flex';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    navigate('home');
+    // Start music (this is the first user gesture)
+    playTrack(ageGroup);
+  }, 300);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HOME SCREEN
+// ═══════════════════════════════════════════════════════════════
+
+function getAllItems() {
+  return [...state.menuItems, ...state.customItems];
+}
+
+function getVisibleItems() {
+  let items = getAllItems().filter(i => i.enabled);
+  items = filterBySearch(items, state.searchQuery);
+  items = items.filter(i => i.category === state.activeCategory);
+  return items;
+}
+
+function getAgeBadgeLabel(ageTags) {
+  if (ageTags.includes('all')) return 'All ages';
+  const map = { child: '8–12', teen: '13–17', adult: '18+' };
+  return ageTags.map(t => map[t] || t).join(', ');
+}
+
+function renderHome() {
+  renderSuggestionBanner();
+  renderLevelBadge('home-level-badge');
+  const items = getVisibleItems();
+  const container = document.getElementById('home-items');
+  const empty = document.getElementById('home-empty');
+
+  if (items.length === 0) {
+    container.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  container.innerHTML = items.map(item => `
+    <div class="item-card" id="card-${item.id}" data-id="${item.id}" data-cat="${item.category}">
+      <button class="why-btn" onclick="showWhy(event,'${item.id}')" title="Why this?">i</button>
+      <span class="tile-emoji">${item.emoji}</span>
+      <div class="tile-name">${item.name}</div>
+      <div class="tile-meta">
+        <span class="time-badge">⏱ ${item.timeEstimate}</span>
+        <span class="age-badge">${getAgeBadgeLabel(item.ageTags)}</span>
+      </div>
+      <button class="win-btn" onclick="logWin('${item.id}')">✓ Done</button>
+      <button onclick="openBodyDouble('${item.name.replace(/'/g,"\\'")}'); event.stopPropagation();" style="background:none;border:none;color:var(--muted);font-size:0.7rem;cursor:pointer;min-height:unset;padding:0.2rem 0;width:100%;transition:color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--muted)'">👥 Body Double</button>
+    </div>
+  `).join('');
+}
+
+function onSearch(val) {
+  state.searchQuery = val;
+  document.getElementById('search-clear').style.display = val ? 'block' : 'none';
+  renderHome();
+}
+
+function clearSearch() {
+  state.searchQuery = '';
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-clear').style.display = 'none';
+  renderHome();
+}
+
+function setCategory(cat) {
+  state.activeCategory = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.cat === cat);
+  });
+  renderHome();
+}
+
+function logWin(itemId) {
+  const item = getAllItems().find(i => i.id === itemId);
+  if (!item) return;
+  // Show "before" energy slider first — it will call _doLogWin internally
+  openEnergyModal(itemId, 'before', null);
+}
+
+function _doLogWin(itemId, energyBefore, energyAfter) {
+  const item = getAllItems().find(i => i.id === itemId);
+  if (!item) return;
+
+  const key = todayKey();
+  if (!state.wins[key]) state.wins[key] = [];
+
+  const entry = {
+    id: item.id,
+    name: item.name,
+    emoji: item.emoji,
+    category: item.category,
+    timestamp: new Date().toISOString()
+  };
+
+  state.wins[key].push(entry);
+  save(SK.WINS, state.wins);
+
+  // Award points with streak multiplier
+  awardPoints(item);
+
+  // Confetti
+  fireConfetti();
+
+  // Card animation
+  const card = document.getElementById('card-' + itemId);
+  if (card) {
+    card.classList.add('win-pop');
+    setTimeout(() => card.classList.remove('win-pop'), 300);
+  }
+
+  // Update home level badge
+  renderLevelBadge('home-level-badge');
+
+  showToast(`${item.emoji} Logged! Great work.`);
+}
+
+function feelingStuck() {
+  const appetizers = getAllItems().filter(i => i.enabled && i.category === 'appetizer');
+  if (appetizers.length === 0) {
+    showToast('No appetizers enabled. Add some in Build!');
+    return;
+  }
+  const pick = appetizers[Math.floor(Math.random() * appetizers.length)];
+
+  // Switch to appetizer tab
+  setCategory('appetizer');
+  clearSearch();
+
+  // Wait for render then highlight
+  setTimeout(() => {
+    const card = document.getElementById('card-' + pick.id);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('stuck-highlight', 'glow-highlight');
+      setTimeout(() => card.classList.remove('stuck-highlight', 'glow-highlight'), 2500);
+    }
+  }, 100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WHY THIS? POPOVER
+// ═══════════════════════════════════════════════════════════════
+
+function showWhy(event, itemId) {
+  event.stopPropagation();
+  // Look up why from state first, then fall back to PRELOADED_ITEMS master list
+  let item = getAllItems().find(i => i.id === itemId);
+  if (!item) item = PRELOADED_ITEMS.find(i => i.id === itemId);
+  const why = (item && item.why) ? item.why : PRELOADED_ITEMS.find(i => i.id === itemId)?.why;
+  if (!why) return;
+
+  const popover = document.getElementById('why-popover');
+  const overlay = document.getElementById('why-overlay');
+
+  document.getElementById('why-title').textContent = why.title;
+  document.getElementById('why-body').textContent = why.body;
+  document.getElementById('why-ref').textContent = why.ref;
+
+  // Position near the button
+  const btn = event.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+
+  popover.style.display = 'block';
+  overlay.style.display = 'block';
+
+  // After display, measure and position
+  requestAnimationFrame(() => {
+    const pw = popover.offsetWidth;
+    const ph = popover.offsetHeight;
+    let left = rect.left;
+    let top  = rect.bottom + 8;
+
+    if (left + pw > vw - 12) left = vw - pw - 12;
+    if (left < 12) left = 12;
+    if (top + ph > vh - 12) top = rect.top - ph - 8;
+
+    popover.style.left = left + 'px';
+    popover.style.top  = top  + 'px';
+  });
+}
+
+function closeWhyPopover() {
+  document.getElementById('why-popover').style.display = 'none';
+  document.getElementById('why-overlay').style.display = 'none';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUILD SCREEN
+// ═══════════════════════════════════════════════════════════════
+
+let dragSrcId = null;
+
+function renderBuild() {
+  const all = getAllItems();
+  const container = document.getElementById('build-items');
+
+  const catOrder = ['appetizer', 'main', 'dessert', 'sensory', 'sides', 'movement', 'social'];
+  const catLabels = { appetizer: '🥗 Appetizers', main: '🍽️ Mains', dessert: '🍰 Desserts', sensory: '🌀 Sensory', sides: '🎧 Sides', movement: '🏃 Movement', social: '🤝 Social' };
+
+  let html = '';
+  catOrder.forEach(cat => {
+    const catItems = all.filter(i => i.category === cat);
+    if (catItems.length === 0) return;
+    html += `<div class="build-cat-header">${catLabels[cat]}</div>`;
+    catItems.forEach(item => {
+      const accent = { appetizer:'#00b4a6', main:'#818cf8', dessert:'#f59e0b', sensory:'#22c55e', sides:'#e879f9', movement:'#f97316', social:'#38bdf8' }[item.category] || 'var(--raised)';
+      html += `
+        <div class="build-tile" id="build-card-${item.id}" draggable="true"
+          style="--card-accent:${accent};"
+          ondragstart="onDragStart(event,'${item.id}')"
+          ondragover="onDragOver(event,'${item.id}')"
+          ondrop="onDrop(event,'${item.id}')"
+          ondragend="onDragEnd(event)">
+          <span class="tile-drag" title="Drag to reorder">⠿</span>
+          ${item.isCustom ? `<button class="tile-delete" onclick="deleteCustomItem('${item.id}')" title="Delete">🗑</button>` : ''}
+          <span class="tile-emoji" style="margin-top:0.5rem;">${item.emoji}</span>
+          <div class="tile-name">${item.name}</div>
+          <span class="time-badge">⏱ ${item.timeEstimate}</span>
+          <div class="tile-toggle-row">
+            <span class="tile-toggle-label">${item.enabled ? 'On' : 'Off'}</span>
+            <label class="toggle" title="${item.enabled ? 'Enabled' : 'Disabled'}">
+              <input type="checkbox" ${item.enabled ? 'checked' : ''} onchange="toggleItem('${item.id}', this.checked)" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      `;
+    });
+  });
+
+  container.innerHTML = html;
+}
+
+function toggleItem(itemId, enabled) {
+  // Check in menuItems first
+  const mi = state.menuItems.find(i => i.id === itemId);
+  if (mi) { mi.enabled = enabled; save(SK.ITEMS, state.menuItems); }
+  else {
+    const ci = state.customItems.find(i => i.id === itemId);
+    if (ci) { ci.enabled = enabled; save(SK.CUSTOM, state.customItems); }
+  }
+  // Update the label text in-place without full re-render
+  const tile = document.getElementById('build-card-' + itemId);
+  if (tile) {
+    const lbl = tile.querySelector('.tile-toggle-label');
+    if (lbl) lbl.textContent = enabled ? 'On' : 'Off';
+  }
+}
+
+function addCustomItem() {
+  const name  = document.getElementById('custom-name').value.trim();
+  const emoji = document.getElementById('custom-emoji').value.trim() || '⭐';
+  const cat   = document.getElementById('custom-category').value;
+  const time  = document.getElementById('custom-time').value.trim() || '5 min';
+
+  if (!name) { showToast('Please enter an activity name'); return; }
+
+  const item = {
+    id: 'custom-' + Date.now(),
+    name, emoji, category: cat,
+    timeEstimate: time,
+    ageTags: ['all'],
+    enabled: true,
+    isCustom: true
+  };
+
+  state.customItems.push(item);
+  save(SK.CUSTOM, state.customItems);
+
+  // Clear form
+  document.getElementById('custom-name').value = '';
+  document.getElementById('custom-emoji').value = '';
+  document.getElementById('custom-time').value = '';
+
+  renderBuild();
+  showToast(`${emoji} "${name}" added to your menu!`);
+}
+
+function deleteCustomItem(itemId) {
+  state.customItems = state.customItems.filter(i => i.id !== itemId);
+  save(SK.CUSTOM, state.customItems);
+  renderBuild();
+  showToast('Item removed');
+}
+
+// Drag and drop
+function onDragStart(e, id) {
+  dragSrcId = id;
+  e.dataTransfer.effectAllowed = 'move';
+  document.getElementById('build-card-' + id).classList.add('dragging');
+}
+
+function onDragOver(e, id) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  document.querySelectorAll('.build-tile').forEach(c => c.classList.remove('drag-over'));
+  const el = document.getElementById('build-card-' + id);
+  if (el) el.classList.add('drag-over');
+}
+
+function onDrop(e, targetId) {
+  e.preventDefault();
+  if (dragSrcId === targetId) return;
+
+  // Reorder in the combined array
+  const all = getAllItems();
+  const srcIdx = all.findIndex(i => i.id === dragSrcId);
+  const tgtIdx = all.findIndex(i => i.id === targetId);
+  if (srcIdx === -1 || tgtIdx === -1) return;
+
+  const [moved] = all.splice(srcIdx, 1);
+  all.splice(tgtIdx, 0, moved);
+
+  // Split back into menuItems and customItems preserving order
+  state.menuItems  = all.filter(i => !i.isCustom);
+  state.customItems = all.filter(i => i.isCustom);
+  save(SK.ITEMS, state.menuItems);
+  save(SK.CUSTOM, state.customItems);
+
+  renderBuild();
+}
+
+function onDragEnd(e) {
+  document.querySelectorAll('.build-tile').forEach(c => {
+    c.classList.remove('dragging', 'drag-over');
+  });
+  dragSrcId = null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WINS SCREEN
+// ═══════════════════════════════════════════════════════════════
+
+function renderWins() {
+  const todayWins = getTodayWins();
+  const count = todayWins.length;
+  const streak = calculateStreak(state.wins);
+
+  document.getElementById('wins-count').textContent = count;
+  document.getElementById('wins-message').textContent = getWinMessage(count);
+  document.getElementById('streak-badge').textContent = `🔥 ${streak} day${streak !== 1 ? 's' : ''} streak`;
+
+  renderXPBar();
+
+  const list = document.getElementById('wins-list');
+  const empty = document.getElementById('wins-empty');
+
+  if (count === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const catAccent = { appetizer:'#00b4a6', main:'#818cf8', dessert:'#f59e0b', sensory:'#22c55e', sides:'#e879f9', movement:'#f97316', social:'#38bdf8' };
+
+  list.innerHTML = todayWins.map(w => {
+    const time = new Date(w.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const accent = catAccent[w.category] || 'var(--raised)';
+    return `
+      <div class="win-tile" style="--card-accent:${accent};">
+        <span class="tile-emoji">${w.emoji}</span>
+        <div class="tile-name">${w.name}</div>
+        <span class="win-time-badge">✓ ${time}</span>
+      </div>
+    `;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PDF EXPORT
+// ═══════════════════════════════════════════════════════════════
+
+function exportPDF() {
+  if (typeof html2pdf === 'undefined') {
+    showToast('PDF export unavailable offline');
+    return;
+  }
+
+  const streak = calculateStreak(state.wins);
+  const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+  // Build last 30 days summary
+  const last30 = [];
+  for (let i = 0; i < 30; i++) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toLocaleDateString('en-CA');
+    const wins = state.wins[key] || [];
+    last30.push({ date: d.toLocaleDateString('en-US', { month:'short', day:'numeric' }), count: wins.length, wins });
+  }
+
+  // Build enabled menu by category
+  const catLabels = { appetizer: '🥗 Appetizers', main: '🍽️ Mains', dessert: '🍰 Desserts', sensory: '🌀 Sensory' };
+  const enabledItems = getAllItems().filter(i => i.enabled);
+  const menuByCategory = {};
+  enabledItems.forEach(item => {
+    if (!menuByCategory[item.category]) menuByCategory[item.category] = [];
+    menuByCategory[item.category].push(item);
+  });
+
+  const menuHTML = Object.entries(catLabels).map(([cat, label]) => {
+    const items = menuByCategory[cat] || [];
+    if (!items.length) return '';
+    return `
+      <div style="margin-bottom:12px;">
+        <div style="font-weight:700;color:#00b4a6;border-bottom:1px solid #00b4a6;padding-bottom:4px;margin-bottom:6px;">${label}</div>
+        ${items.map(i => `<div style="padding:3px 0;font-size:12px;">${i.emoji} ${i.name} <span style="color:#666;">(${i.timeEstimate})</span></div>`).join('')}
+      </div>
+    `;
+  }).join('');
+
+  const historyHTML = last30.map(d => `
+    <div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid #eee;">
+      <span>${d.date}</span>
+      <span style="color:${d.count > 0 ? '#00b4a6' : '#999'};font-weight:${d.count > 0 ? '700' : '400'};">${d.count} win${d.count !== 1 ? 's' : ''}</span>
+    </div>
+  `).join('');
+
+  const el = document.createElement('div');
+  el.style.cssText = 'font-family:system-ui,sans-serif;background:#fff;color:#1e293b;padding:0;width:210mm;';
+  el.innerHTML = `
+    <div style="background:#00b4a6;color:#fff;padding:24px 32px;margin-bottom:24px;">
+      <div style="font-size:24px;font-weight:800;">🧠 ADHD Dopamine Menu</div>
+      <div style="font-size:14px;margin-top:4px;opacity:0.9;">Generated on ${today}</div>
+      <div style="margin-top:8px;background:rgba(255,255,255,0.2);display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;">🔥 ${streak} day streak</div>
+    </div>
+    <div style="padding:0 32px 32px;display:grid;grid-template-columns:1fr 1fr;gap:32px;">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#00b4a6;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #00b4a6;">Your Current Menu</div>
+        ${menuHTML}
+      </div>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:#00b4a6;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #00b4a6;">Last 30 Days</div>
+        ${historyHTML}
+      </div>
+    </div>
+  `;
+
+  html2pdf().set({
+    margin: 0,
+    filename: 'dopamine-menu-' + todayKey() + '.pdf',
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(el).save();
+
+  showToast('📄 Exporting your menu...');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// HISTORY SCREEN
+// ═══════════════════════════════════════════════════════════════
+
+function renderHistory() {
+  renderHeatmap();
+  renderMonthlySummary();
+}
+
+function renderHeatmap() {
+  const container = document.getElementById('heatmap');
+  let html = '';
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toLocaleDateString('en-CA');
+    const wins = state.wins[key] || [];
+    const count = wins.length;
+    const opacity = getHeatOpacity(count);
+    const isToday = i === 0;
+
+    const bg = opacity > 0
+      ? `rgba(0,180,166,${opacity})`
+      : 'var(--surface)';
+
+    const border = isToday ? '2px solid var(--accent)' : '1px solid var(--raised)';
+    const dayNum = d.getDate();
+
+    html += `
+      <div class="heat-cell" onclick="openDayPanel('${key}')"
+        style="background:${bg};border:${border};"
+        title="${key}: ${count} win${count !== 1 ? 's' : ''}">
+        ${dayNum}
+      </div>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+function renderMonthlySummary() {
+  let totalWins = 0;
+  const catCounts = {};
+  let longestStreak = 0;
+  let currentStreak = 0;
+
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toLocaleDateString('en-CA');
+    const wins = state.wins[key] || [];
+    totalWins += wins.length;
+    wins.forEach(w => {
+      catCounts[w.category] = (catCounts[w.category] || 0) + 1;
+    });
+    if (wins.length > 0) {
+      currentStreak++;
+      longestStreak = Math.max(longestStreak, currentStreak);
+    } else {
+      currentStreak = 0;
+    }
+  }
+
+  const catLabels = { appetizer: '🥗 Appetizers', main: '🍽️ Mains', dessert: '🍰 Desserts', sensory: '🌀 Sensory' };
+  const topCat = Object.entries(catCounts).sort((a,b) => b[1]-a[1])[0];
+  const topCatLabel = topCat ? (catLabels[topCat[0]] || topCat[0]) : 'None yet';
+
+  document.getElementById('summary-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;">
+      <div style="background:var(--raised);border-radius:10px;padding:1rem;text-align:center;">
+        <div style="font-size:1.75rem;font-weight:800;color:var(--accent);">${totalWins}</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:0.2rem;">Total Wins</div>
+      </div>
+      <div style="background:var(--raised);border-radius:10px;padding:1rem;text-align:center;">
+        <div style="font-size:1.75rem;font-weight:800;color:var(--warning);">${longestStreak}</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:0.2rem;">Best Streak</div>
+      </div>
+      <div style="background:var(--raised);border-radius:10px;padding:1rem;text-align:center;">
+        <div style="font-size:1rem;font-weight:700;color:var(--success);">${topCatLabel}</div>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:0.2rem;">Top Category</div>
+      </div>
+    </div>
+  `;
+}
+
+function openDayPanel(dateKey) {
+  const wins = state.wins[dateKey] || [];
+  const d = new Date(dateKey + 'T12:00:00');
+  const label = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' });
+
+  document.getElementById('day-panel-title').textContent = label;
+
+  const content = document.getElementById('day-panel-content');
+  if (wins.length === 0) {
+    content.innerHTML = `<div class="empty-state" style="padding:1.5rem 0;"><div class="emoji" style="font-size:2rem;">🌱</div><div>No wins logged this day</div></div>`;
+  } else {
+    content.innerHTML = wins.map(w => {
+      const time = new Date(w.timestamp).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      return `
+        <div class="win-item" style="margin-bottom:0.5rem;">
+          <span style="font-size:1.4rem;">${w.emoji}</span>
+          <div style="flex:1;">
+            <div style="font-weight:600;color:var(--text);font-size:0.9rem;">${w.name}</div>
+            <div style="font-size:0.75rem;color:var(--muted);">${time}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  const backdrop = document.getElementById('day-panel-backdrop');
+  const panel = document.getElementById('day-panel');
+  backdrop.style.display = 'block';
+  panel.classList.add('open');
+}
+
+function closeDayPanel() {
+  document.getElementById('day-panel').classList.remove('open');
+  setTimeout(() => {
+    document.getElementById('day-panel-backdrop').style.display = 'none';
+  }, 300);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SETTINGS SCREEN
+// ═══════════════════════════════════════════════════════════════
+
+function renderSettings() {
+  // Music toggle
+  const musicToggle = document.getElementById('music-toggle');
+  if (musicToggle) musicToggle.checked = state.musicEnabled;
+
+  // Age group buttons
+  document.querySelectorAll('.age-select-btn').forEach(btn => {
+    const isActive = btn.dataset.age === state.ageGroup;
+    btn.style.borderColor = isActive ? 'var(--accent)' : 'var(--raised)';
+    btn.style.background  = isActive ? 'rgba(0,180,166,0.15)' : 'var(--surface)';
+    btn.style.color       = isActive ? 'var(--accent)' : 'var(--text)';
+  });
+
+  // License key
+  const licInput = document.getElementById('license-input');
+  const licCheck = document.getElementById('license-check');
+  if (licInput) licInput.value = state.licenseKey;
+  if (licCheck) licCheck.classList.toggle('visible', isValidLicenseKey(state.licenseKey));
+}
+
+function toggleMusic(enabled) {
+  state.musicEnabled = enabled;
+  save(SK.MUSIC_ON, enabled);
+  if (enabled) {
+    if (state.ageGroup) playTrack(state.ageGroup);
+  } else {
+    stopAllTracks();
+  }
+}
+
+function changeAgeGroup(newAge) {
+  const oldAge = state.ageGroup;
+  state.ageGroup = newAge;
+  saveRaw(SK.AGE, newAge);
+
+  // Re-filter menu items for new age group
+  const currentCustomIds = new Set(state.customItems.map(i => i.id));
+  const filtered = filterByAge(PRELOADED_ITEMS, newAge).map(item => {
+    // Preserve enabled state if item was already in menu
+    const existing = state.menuItems.find(m => m.id === item.id);
+    return { ...item, enabled: existing ? existing.enabled : true };
+  });
+  state.menuItems = filtered;
+  save(SK.ITEMS, filtered);
+
+  // Switch music
+  if (oldAge !== newAge) {
+    switchTrack(newAge);
+  }
+
+  renderSettings();
+  showToast('Age group updated to ' + newAge);
+}
+
+function onLicenseInput(val) {
+  state.licenseKey = val;
+  saveRaw(SK.LICENSE, val);
+  const check = document.getElementById('license-check');
+  if (check) check.classList.toggle('visible', isValidLicenseKey(val));
+}
+
+function resetAllData() {
+  const confirmed = window.confirm(
+    'This will delete ALL your wins, settings, and custom items.\n\nAre you sure? This cannot be undone.'
+  );
+  if (!confirmed) return;
+
+  Object.values(SK).forEach(key => {
+    try { localStorage.removeItem(key); } catch(e) {}
+  });
+
+  state.points = 0;
+  state.energyLog = {};
+  state.dailySuggestion = null;
+  window.location.reload();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// POINTS + LEVEL SYSTEM
+// ═══════════════════════════════════════════════════════════════
+
+const LEVELS = [
+  { level: 1,  name: 'Seedling',    min: 0    },
+  { level: 2,  name: 'Sprout',      min: 50   },
+  { level: 3,  name: 'Sapling',     min: 150  },
+  { level: 4,  name: 'Explorer',    min: 300  },
+  { level: 5,  name: 'Achiever',    min: 500  },
+  { level: 6,  name: 'Momentum',    min: 750  },
+  { level: 7,  name: 'Flow State',  min: 1100 },
+  { level: 8,  name: 'Hyperfocus',  min: 1600 },
+  { level: 9,  name: 'Dopamine Pro',min: 2200 },
+  { level: 10, name: 'Brain Boss',  min: 3000 }
+];
+
+const POINT_VALUES = { appetizer: 5, main: 15, dessert: 10, sensory: 8, sides: 5, movement: 12, social: 10 };
+
+function getLevel(points) {
+  let current = LEVELS[0];
+  for (const l of LEVELS) { if (points >= l.min) current = l; }
+  return current;
+}
+
+function getNextLevel(points) {
+  const idx = LEVELS.findIndex(l => l.min > points);
+  return idx === -1 ? null : LEVELS[idx];
+}
+
+function getStreakMultiplier(streak) {
+  if (streak >= 14) return 3;
+  if (streak >= 7)  return 2;
+  if (streak >= 3)  return 1.5;
+  return 1;
+}
+
+function awardPoints(item) {
+  const streak = calculateStreak(state.wins);
+  const multiplier = getStreakMultiplier(streak);
+  const base = POINT_VALUES[item.category] || 5;
+  const earned = Math.round(base * multiplier);
+
+  const prevLevel = getLevel(state.points);
+  state.points += earned;
+  save(SK.POINTS, state.points);
+  const newLevel = getLevel(state.points);
+
+  // Floating points pop
+  showPointsPop(earned, multiplier > 1 ? `🔥 ${multiplier}x` : null);
+
+  // Level-up toast
+  if (newLevel.level > prevLevel.level) {
+    setTimeout(() => showToast(`🎉 Level up! You're now ${newLevel.name} (Level ${newLevel.level})`), 600);
+    fireConfetti();
+  }
+
+  return earned;
+}
+
+function showPointsPop(points, bonus) {
+  const el = document.createElement('div');
+  el.className = 'points-pop';
+  el.textContent = `+${points} XP${bonus ? ' ' + bonus : ''}`;
+  el.style.left = (Math.random() * 40 + 30) + '%';
+  el.style.top  = '40%';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function renderLevelBadge(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const lv = getLevel(state.points);
+  el.innerHTML = `<span class="level-badge">⭐ Lv.${lv.level} ${lv.name}</span>`;
+}
+
+function renderXPBar() {
+  const lv   = getLevel(state.points);
+  const next = getNextLevel(state.points);
+  const bar  = document.getElementById('wins-xp-bar');
+  const lbl  = document.getElementById('wins-points-label');
+  const nxt  = document.getElementById('wins-points-next');
+  const lvBadge = document.getElementById('wins-level-badge');
+
+  if (lvBadge) lvBadge.textContent = `⭐ Lv.${lv.level} ${lv.name}`;
+  if (lbl) lbl.textContent = `${state.points} XP`;
+
+  if (next) {
+    const pct = Math.min(100, Math.round(((state.points - lv.min) / (next.min - lv.min)) * 100));
+    if (bar) bar.style.width = pct + '%';
+    if (nxt) nxt.textContent = `${next.min - state.points} to ${next.name}`;
+  } else {
+    if (bar) bar.style.width = '100%';
+    if (nxt) nxt.textContent = 'Max level!';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DAILY SUGGESTION
+// ═══════════════════════════════════════════════════════════════
+
+function getDailySuggestion(refresh) {
+  const today = todayKey();
+  if (!refresh && state.dailySuggestion && state.dailySuggestion.date === today) {
+    return getAllItems().find(i => i.id === state.dailySuggestion.itemId) || pickSuggestion();
+  }
+  return pickSuggestion();
+}
+
+function pickSuggestion() {
+  const today = todayKey();
+  const todayWinIds = new Set((state.wins[today] || []).map(w => w.id));
+  // Prefer items not yet done today, weighted toward appetizers and mains
+  const pool = getAllItems().filter(i => i.enabled && !todayWinIds.has(i.id));
+  if (pool.length === 0) return getAllItems().find(i => i.enabled) || null;
+  // Weight: appetizer=3, main=2, others=1
+  const weighted = [];
+  pool.forEach(item => {
+    const w = item.category === 'appetizer' ? 3 : item.category === 'main' ? 2 : 1;
+    for (let i = 0; i < w; i++) weighted.push(item);
+  });
+  const pick = weighted[Math.floor(Math.random() * weighted.length)];
+  state.dailySuggestion = { date: today, itemId: pick.id };
+  save(SK.SUGGESTION, state.dailySuggestion);
+  return pick;
+}
+
+function renderSuggestionBanner() {
+  const wrap = document.getElementById('suggestion-banner-wrap');
+  if (!wrap) return;
+  const item = getDailySuggestion(false);
+  if (!item) { wrap.innerHTML = ''; return; }
+
+  wrap.innerHTML = `
+    <div class="suggestion-banner" onclick="jumpToSuggestion('${item.id}')">
+      <span class="sug-emoji">${item.emoji}</span>
+      <div style="flex:1;min-width:0;">
+        <div class="sug-label">✨ Today's Pick</div>
+        <div class="sug-name">${item.name}</div>
+        <div class="sug-time">⏱ ${item.timeEstimate}</div>
+      </div>
+      <button class="sug-refresh" onclick="refreshSuggestion(event)" title="New suggestion">🔄</button>
+    </div>
+  `;
+}
+
+function refreshSuggestion(event) {
+  event.stopPropagation();
+  getDailySuggestion(true);
+  renderSuggestionBanner();
+}
+
+function jumpToSuggestion(itemId) {
+  const item = getAllItems().find(i => i.id === itemId);
+  if (!item) return;
+  setCategory(item.category);
+  clearSearch();
+  setTimeout(() => {
+    const card = document.getElementById('card-' + itemId);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('stuck-highlight', 'glow-highlight');
+      setTimeout(() => card.classList.remove('stuck-highlight', 'glow-highlight'), 2500);
+    }
+  }, 100);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BEFORE / AFTER ENERGY SLIDER
+// ═══════════════════════════════════════════════════════════════
+
+const ENERGY_LABELS = ['', 'Drained 😴', 'Low 😕', 'Okay 😐', 'Good 🙂', 'Energised ⚡'];
+let _energyPending = null; // { itemId, phase: 'before'|'after', beforeValue }
+
+function openEnergyModal(itemId, phase, beforeValue) {
+  _energyPending = { itemId, phase, beforeValue: beforeValue || null };
+  const modal = document.getElementById('energy-modal');
+  const phaseEl = document.getElementById('energy-modal-phase');
+  const itemEl  = document.getElementById('energy-modal-item');
+  const slider  = document.getElementById('energy-slider');
+  const submitBtn = document.getElementById('energy-submit-btn');
+  const item = getAllItems().find(i => i.id === itemId);
+
+  phaseEl.textContent = phase === 'before' ? 'Before: How\'s your energy right now?' : 'After: How do you feel now?';
+  itemEl.textContent  = item ? `${item.emoji} ${item.name}` : '';
+  slider.value = 3;
+  document.getElementById('energy-slider-label').textContent = ENERGY_LABELS[3];
+  submitBtn.textContent = phase === 'before' ? 'Start activity →' : 'Log it ✓';
+
+  modal.classList.add('open');
+}
+
+function closeEnergyModal() {
+  document.getElementById('energy-modal').classList.remove('open');
+  // If skipping "before", still log the win
+  if (_energyPending && _energyPending.phase === 'before') {
+    _doLogWin(_energyPending.itemId, null, null);
+  }
+  _energyPending = null;
+}
+
+function submitEnergy() {
+  if (!_energyPending) return;
+  const val = parseInt(document.getElementById('energy-slider').value, 10);
+  document.getElementById('energy-modal').classList.remove('open');
+
+  if (_energyPending.phase === 'before') {
+    // Log the win, then prompt "after" in 30 seconds (or immediately for demo)
+    _doLogWin(_energyPending.itemId, val, null);
+    const itemId = _energyPending.itemId;
+    const beforeVal = val;
+    _energyPending = null;
+    // Prompt "after" after a short delay (user can dismiss)
+    setTimeout(() => openEnergyModal(itemId, 'after', beforeVal), 8000);
+  } else {
+    // Save the after value
+    const { itemId, beforeValue } = _energyPending;
+    _energyPending = null;
+    saveEnergyEntry(itemId, beforeValue, val);
+    const delta = val - (beforeValue || 3);
+    if (delta > 0) showToast(`⚡ Energy up ${delta > 1 ? 'a lot' : 'a bit'}! The menu works. 🎉`);
+    else if (delta === 0) showToast('Energy held steady — that counts too. 💙');
+    else showToast('Rest is valid. You still showed up. 💙');
+  }
+}
+
+function saveEnergyEntry(itemId, before, after) {
+  const today = todayKey();
+  if (!state.energyLog[today]) state.energyLog[today] = [];
+  state.energyLog[today].push({ itemId, before, after, timestamp: new Date().toISOString() });
+  save(SK.ENERGY, state.energyLog);
+}
+
+// Wire up slider label update
+document.addEventListener('DOMContentLoaded', () => {
+  const slider = document.getElementById('energy-slider');
+  if (slider) {
+    slider.addEventListener('input', () => {
+      document.getElementById('energy-slider-label').textContent = ENERGY_LABELS[slider.value] || '';
+    });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+// BODY DOUBLE MODE
+// ═══════════════════════════════════════════════════════════════
+
+let _bdInterval = null;
+let _bdSecondsLeft = 0;
+const BD_MESSAGES = [
+  "You're not alone. I'm right here with you. 💙",
+  "One breath at a time. You've got this. 🌱",
+  "Your brain is doing its best. That's enough. ✨",
+  "Progress, not perfection. Keep going. 🎯",
+  "I see you working. You're doing great. 🧠",
+  "The hardest part was starting. You already did it. 🔥"
+];
+
+function openBodyDouble(itemName) {
+  const name = itemName || 'Focus session';
+  _bdSecondsLeft = 10 * 60; // 10 minutes default
+  document.getElementById('bd-task-name').textContent = name;
+  document.getElementById('bd-message').textContent = BD_MESSAGES[Math.floor(Math.random() * BD_MESSAGES.length)];
+  updateBdTimer();
+  document.getElementById('body-double-overlay').classList.add('open');
+
+  _bdInterval = setInterval(() => {
+    _bdSecondsLeft--;
+    updateBdTimer();
+    // Rotate message every 2 minutes
+    if (_bdSecondsLeft % 120 === 0) {
+      document.getElementById('bd-message').textContent = BD_MESSAGES[Math.floor(Math.random() * BD_MESSAGES.length)];
+    }
+    if (_bdSecondsLeft <= 0) {
+      clearInterval(_bdInterval);
+      document.getElementById('bd-message').textContent = '🎉 Session complete! Amazing work.';
+      document.getElementById('bd-timer').textContent = '0:00';
+      fireConfetti();
+      setTimeout(stopBodyDouble, 3000);
+    }
+  }, 1000);
+}
+
+function updateBdTimer() {
+  const m = Math.floor(_bdSecondsLeft / 60);
+  const s = _bdSecondsLeft % 60;
+  document.getElementById('bd-timer').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+function addBodyDoubleTime() {
+  _bdSecondsLeft += 5 * 60;
+  updateBdTimer();
+  showToast('+5 minutes added 💪');
+}
+
+function stopBodyDouble() {
+  clearInterval(_bdInterval);
+  _bdInterval = null;
+  document.getElementById('body-double-overlay').classList.remove('open');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// APP INITIALIZATION
+// ═══════════════════════════════════════════════════════════════
+
+function init() {
+  loadState();
+
+  const firstLaunch = localStorage.getItem(SK.FIRST);
+  const hasAgeGroup = !!state.ageGroup;
+
+  if (firstLaunch === 'false' && hasAgeGroup) {
+    // Returning user — skip welcome modal
+    document.getElementById('welcome-modal').style.display = 'none';
+    document.getElementById('app-shell').style.display = 'flex';
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    navigate('home');
+
+    // Resume music on next user interaction (browser policy)
+    if (state.musicEnabled) {
+      const resumeMusic = () => {
+        playTrack(state.ageGroup);
+        document.removeEventListener('click', resumeMusic);
+        document.removeEventListener('keydown', resumeMusic);
+      };
+      document.addEventListener('click', resumeMusic, { once: true });
+      document.addEventListener('keydown', resumeMusic, { once: true });
+    }
+  } else {
+    // First launch — show welcome modal
+    document.getElementById('app-shell').style.display = 'none';
+    document.getElementById('welcome-modal').style.display = 'flex';
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+document.addEventListener('DOMContentLoaded', init);
+
+// ═══════════════════════════════════════════════════════════════
+// SERVICE WORKER (inline blob, cache-first)
+// ═══════════════════════════════════════════════════════════════
+
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE = 'adhd-menu-v2';
+    const ASSETS = ['/', 'index.html', 'music-child.mp3', 'music-teen.mp3', 'music-adult.mp3', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-180.png'];
+
+    self.addEventListener('install', e => {
+      e.waitUntil(
+        caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+      );
+    });
+
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        ).then(() => self.clients.claim())
+      );
+    });
+
+    self.addEventListener('fetch', e => {
+      e.respondWith(
+        caches.match(e.request).then(cached => {
+          if (cached) return cached;
+          return fetch(e.request).then(res => {
+            if (!res || res.status !== 200 || res.type === 'opaque') return res;
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone));
+            return res;
+          }).catch(() => cached);
+        })
+      );
+    });
+  `;
+
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PWA MANIFEST (inline blob)
+// ═══════════════════════════════════════════════════════════════
+
+(function() {
+  const manifest = {
+    name: 'ADHD Dopamine Menu Tracker',
+    short_name: 'Dopamine Menu',
+    description: "Your brain's personalized dopamine menu",
+    start_url: './',
+    display: 'standalone',
+    background_color: '#0f172a',
+    theme_color: '#00b4a6',
+    orientation: 'portrait-primary',
+    icons: [
+      { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+      { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
+    ]
+  };
+
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = url;
+  document.head.appendChild(link);
+})();
+</script>
+</body>
+</html>
