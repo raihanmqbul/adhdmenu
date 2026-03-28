@@ -9,6 +9,22 @@
     gtag('js', new Date());
     gtag('config', 'AW-18046796258');
   </script>
+  <!-- Event snippet for Purchase conversion page -->
+  <script>
+    function gtag_report_conversion(url) {
+      var callback = function () {
+        if (typeof(url) != 'undefined') { window.location = url; }
+      };
+      gtag('event', 'conversion', {
+        'send_to': 'AW-18046796258/RP5DCLmOj5EcEOKDsZ1D',
+        'value': 1.0,
+        'currency': 'PKR',
+        'transaction_id': '',
+        'event_callback': callback
+      });
+      return false;
+    }
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Dopamine Menu — a gamified ADHD activity app built by someone who gets it. No shame, no subscriptions, just wins." />
@@ -55,7 +71,7 @@
       <a href="#pricing" class="hover:text-teal-500 transition-colors">Pricing</a>
       <a href="#faq" class="hover:text-teal-500 transition-colors">FAQ</a>
     </div>
-    <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-sm hidden md:inline-flex">
+    <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-sm hidden md:inline-flex" onclick="return gtag_report_conversion('https://raihanadhd.gumroad.com/l/adhdmenu_mobile')">
       <i data-lucide="zap" style="width:15px;height:15px;"></i> Grab It — $19.99
     </a>
     <button class="md:hidden p-2 text-slate-600" onclick="document.getElementById('mm').classList.toggle('hidden')">
@@ -68,7 +84,7 @@
     <a href="#how-it-works">How It Works</a>
     <a href="#pricing">Pricing</a>
     <a href="#faq">FAQ</a>
-    <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-center justify-center">Grab It — $19.99</a>
+    <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-center justify-center" onclick="return gtag_report_conversion('https://raihanadhd.gumroad.com/l/adhdmenu_mobile')">Grab It — $19.99</a>
   </div>
 </nav>
 
@@ -90,7 +106,7 @@
         Built by someone who once stared at a wall for two hours trying to decide between washing a dish and writing an email. (The dish won. Eventually.)
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-8 py-4 text-base w-full sm:w-auto justify-center">
+        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-8 py-4 text-base w-full sm:w-auto justify-center" onclick="return gtag_report_conversion('https://raihanadhd.gumroad.com/l/adhdmenu_mobile')">
           <i data-lucide="zap" style="width:18px;height:18px;"></i> Yeah, I Need This — $19.99
         </a>
       </div>
@@ -311,7 +327,7 @@
         <div class="text-5xl mb-4">&#x1F4F1;</div>
         <h3 class="font-bold text-slate-900 text-lg mb-2">Mobile App</h3>
         <p class="text-slate-500 text-sm leading-relaxed mb-4">Installs on your home screen. Fullscreen, offline, native feel. Best for daily use — it's right there when you need it.</p>
-        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-sm mx-auto"><i data-lucide="smartphone" style="width:15px;height:15px;"></i> Get the App — $19.99</a>
+        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-5 py-2.5 text-sm mx-auto" onclick="return gtag_report_conversion('https://raihanadhd.gumroad.com/l/adhdmenu_mobile')"><i data-lucide="smartphone" style="width:15px;height:15px;"></i> Get the App — $19.99</a>
       </div>
       <div class="bento text-center fade-up" style="transition-delay:0.1s">
         <div class="text-5xl mb-4">&#x1F5A5;</div>
@@ -369,7 +385,7 @@
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Works fully offline, no account needed</li>
           <li class="flex items-start gap-3 text-sm text-slate-700"><i data-lucide="check-circle" style="width:18px;height:18px;min-width:18px;color:#00b4a6;margin-top:1px;"></i>Free updates forever</li>
         </ul>
-        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p w-full py-4 text-base justify-center">
+        <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p w-full py-4 text-base justify-center" onclick="return gtag_report_conversion('https://raihanadhd.gumroad.com/l/adhdmenu_mobile')">
           <i data-lucide="shopping-cart" style="width:18px;height:18px;"></i> Get It on Gumroad — $19.99
         </a>
         <p class="text-center text-xs text-slate-400 mt-3">Secure checkout · Instant delivery · 30-day refund, no questions asked</p>
@@ -425,7 +441,7 @@
       You don't need more discipline. You just need a better menu. Let's turn "I'll do it later" into "done and dusted" — one small win at a time.
     </p>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-      <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-8 py-4 text-base justify-center">
+      <a href="https://raihanadhd.gumroad.com/l/adhdmenu_mobile" target="_blank" rel="noopener" class="btn-p px-8 py-4 text-base justify-center" onclick="return gtag_report_conversion('https://raihanadhd.gumroad.com/l/adhdmenu_mobile')">
         <i data-lucide="zap" style="width:18px;height:18px;"></i> Get the Dopamine Menu — $19.99
       </a>
     </div>
