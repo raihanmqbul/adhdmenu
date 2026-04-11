@@ -15,11 +15,12 @@
       var callback = function () {
         if (typeof(url) != 'undefined') { window.location = url; }
       };
+      var txnId = Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 9);
       gtag('event', 'conversion', {
         'send_to': 'AW-18046796258/RP5DCLmOj5EcEOKDsZ1D',
         'value': 1.0,
         'currency': 'PKR',
-        'transaction_id': '',
+        'transaction_id': txnId,
         'event_callback': callback
       });
       return false;
